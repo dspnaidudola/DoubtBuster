@@ -42,6 +42,7 @@ def detect_academic_field(question: str, subject: str = "") -> str:
 
     # 2. AI, Machine Learning & Data Science
     if has_word([
+        "artificial intelligence", "ai", "generative ai", "genai", "computer vision",
         "machine learning", "supervised learning", "unsupervised learning", "reinforcement learning",
         "deep learning", "neural network", "transformer", "attention mechanism",
         "gradient descent", "backpropagation", "random forest", "decision tree", "svm",
@@ -148,7 +149,7 @@ def detect_academic_field(question: str, subject: str = "") -> str:
         return "Mathematics & Statistics"
 
     # 13. Computer Science & Coding generic
-    if has_word(["python", "code", "programming", "function", "array", "algorithm"]):
+    if has_word(["python", "code", "programming", "program", "function", "array", "algorithm", "even", "odd", "script", "loop"]):
         return "Computer Science & Programming"
 
     return "General Science & Academic Inquiry"
@@ -162,7 +163,19 @@ def detect_domain(question: str, subject: str = "") -> str:
     if "prime minister" in q_lower:
         return "theory"
 
-    # Explicit Actionable Coding Requests
+    # 1. Any phrase combining action verb + coding noun (e.g. "write even number code", "write even number program")
+    if re.search(r'\b(write|create|implement|give|show|generate|make|develop)\b.*?\b(code|program|script|function|algorithm)\b', q_lower):
+        return "coding"
+
+    # 2. Any phrase ending with code/program/script (e.g. "even number code", "fibonacci program")
+    if re.search(r'.*\b(code|program|script)\b$', q_lower.rstrip('.!? ')):
+        return "coding"
+
+    # 3. Any query with "code for", "program for", "function to", etc.
+    if re.search(r'\b(code|program|script|function|algorithm)\b\s+(for|to|of|that|which)\b', q_lower):
+        return "coding"
+
+    # 4. Explicit Actionable Coding Requests
     explicit_code_action = any(phrase in q_lower for phrase in [
         "write a code", "write code", "python code", "code in python", "program to",
         "write a program", "function to", "write a function", "implement in python",
@@ -173,15 +186,15 @@ def detect_domain(question: str, subject: str = "") -> str:
     if explicit_code_action:
         return "coding"
 
-    # Coding Problems & Algorithms
+    # 5. Coding Problems & Algorithms
     coding_problem_keywords = [
-        "fizzbuzz", "palindrome", "fibonacci", "factorial", "armstrong",
-        "binary search", "bubble sort", "merge sort", "quick sort", "two sum",
-        "reverse string", "reverse words", "count vowels", "remove duplicates",
-        "flatten list", "check prime", "prime number", "for loop in python", "while loop in python",
-        "anagram", "matrix multiplication", "linear regression"
+        "even number", "odd number", "even or odd", "fizzbuzz", "palindrome",
+        "fibonacci", "factorial", "armstrong", "binary search", "bubble sort",
+        "merge sort", "quick sort", "two sum", "reverse string", "reverse words",
+        "count vowels", "remove duplicates", "flatten list", "check prime",
+        "prime number", "matrix multiplication", "linear regression", "leap year"
     ]
-    if any(k in q_lower for k in coding_problem_keywords) and any(w in q_lower for w in ["code", "python", "function", "program", "script", "algorithm", "implement", "write"]):
+    if any(k in q_lower for k in coding_problem_keywords) and any(w in q_lower for w in ["code", "python", "function", "program", "script", "algorithm", "implement", "write", "check", "find"]):
         return "coding"
 
     # Explicit Math & Equation Cues
@@ -453,7 +466,65 @@ The objective is to train a model that accurately predicts target values for uns
 - **Optimization:** Weights updated iteratively via Gradient Descent to minimize the task loss function.
 """
 
-    elif "machine learning" in q_lower or "machine learning" in concept_title.lower() or bool(re.search(r'\b(ai|artificial intelligence)\b', q_lower)):
+    elif "artificial intelligence" in q_lower or bool(re.search(r'\b(ai)\b', q_lower)) or "artificial intelligence" in concept_title.lower():
+        return r"""### 💡 Artificial Intelligence (AI): Comprehensive Academic Guide
+**Academic Discipline:** AI, Machine Learning & Data Science
+
+---
+
+#### 📖 Overview & Foundational Definition
+**Artificial Intelligence (AI)** is the broad domain of computer science dedicated to engineering intelligent computational agents capable of performing cognitive tasks that typically require human intelligence. These tasks include **visual perception, speech recognition, symbolic reasoning, decision-making, planning, and learning from experience**.
+
+The term was coined by **John McCarthy** in 1956 at the Dartmouth Summer Research Project on Artificial Intelligence:
+> *"The science and engineering of making intelligent machines, especially intelligent computer programs."*
+
+---
+
+#### 🏛️ The AI Hierarchy: AI vs. Machine Learning vs. Deep Learning
+```mermaid
+flowchart TD
+    AI["Artificial Intelligence (Broadest Field: Search, Logic, Knowledge, Robotics)"]
+    ML["Machine Learning (Data-Driven Pattern Recognition & Statistical Algorithms)"]
+    DL["Deep Learning (Multi-Layer Artificial Neural Networks & Representation Learning)"]
+    GenAI["Generative AI & LLMs (Transformers, Attention Mechanisms, Synthetic Content)"]
+
+    AI --> ML
+    ML --> DL
+    DL --> GenAI
+```
+
+---
+
+#### ⚙️ The Four Major Paradigms & Core Branches of AI
+1. **Symbolic / Classical AI (Knowledge-Based & Rule-Based):**
+   - **Mechanism:** Solves problems using formal logic, semantic ontologies, production rules (`IF-THEN`), and search trees.
+   - **Key Methods:** $A^*$ Search, Minimax with Alpha-Beta Pruning, Expert Systems, First-Order Predicate Calculus.
+2. **Sub-Symbolic / Statistical Machine Learning:**
+   - **Mechanism:** Extracts decision rules and mathematical mappings directly from empirical data without manual programming.
+   - **Paradigms:** Supervised Learning (Classification/Regression), Unsupervised Learning (Clustering/PCA), Reinforcement Learning (Q-learning).
+3. **Deep Learning & Artificial Neural Networks:**
+   - **Mechanism:** Stacks deep hidden layers of artificial neurons using backpropagation to automatically discover hierarchical feature representations directly from raw inputs.
+   - **Architectures:** CNNs (Vision), RNNs/LSTMs (Sequential), Transformers (Language & Multi-modal).
+4. **Natural Language Processing (NLP) & Computer Vision:**
+   - **NLP:** Enables computers to process, understand, and generate natural human language (Syntax parsing, Named Entity Recognition, Machine Translation, Large Language Models).
+   - **Vision:** Reconstructs and interprets 3D visual environments from 2D pixel grids (Object Detection via YOLO, Semantic Segmentation).
+
+---
+
+#### 🎯 Types of AI by Capability Level
+- **Narrow AI (Weak AI):** Specialized in one specific domain (e.g., AlphaGo, facial recognition, ChatGPT). This is the only type of AI that currently exists in reality.
+- **Artificial General Intelligence (AGI / Strong AI):** Theoretical machine intelligence capable of understanding, learning, and applying knowledge across any intellectual task at human levels.
+- **Artificial Superintelligence (ASI):** Hypothetical future AI surpassing the collective cognitive capabilities of the entire human species.
+
+---
+
+### 🎯 Key Academic Takeaways
+- **Scope:** AI is the parent superset; Machine Learning is a subset of AI; Deep Learning is a subset of ML.
+- **Turing Test (1950):** Alan Turing's foundational behavioral test evaluating whether an AI system's conversational responses can be distinguished from a human.
+- **Rational Agent Principle:** In modern academic literature (Russell & Norvig), an AI is formalized as a rational agent that perceives its environment through sensors and takes actions through actuators to maximize its expected performance measure.
+"""
+
+    elif "machine learning" in q_lower or "machine learning" in concept_title.lower() or bool(re.search(r'\b(ml)\b', q_lower)):
         return r"""### 💡 Machine Learning: Comprehensive Guide
 **Academic Discipline:** AI, Machine Learning & Data Science
 

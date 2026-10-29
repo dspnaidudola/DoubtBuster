@@ -10,7 +10,114 @@ def synthesize_programming_answer(question: str, subject: str = "", topic: str =
     q_clean = (question or "").strip()
     q_lower = q_clean.lower()
 
-    if "prime" in q_lower and "prime minister" not in q_lower:
+    if any(k in q_lower for k in ["even", "odd"]):
+        title = "Even and Odd Number Operations"
+        logic = (
+            "1. An integer n is even if n % 2 == 0; otherwise it is odd.\n"
+            "2. For single number check: return n % 2 == 0.\n"
+            "3. For generating even numbers up to limit: iterate range(0, limit + 1, 2).\n"
+            "4. For filtering list: use list comprehension [x for x in nums if x % 2 == 0]."
+        )
+        code = '''def is_even(n: int) -> bool:
+    """Returns True if integer n is even, False if odd."""
+    return n % 2 == 0
+
+def get_even_numbers(limit: int) -> list:
+    """Generates all even numbers from 0 up to limit."""
+    return [x for x in range(0, limit + 1) if x % 2 == 0]
+
+def filter_even_numbers(numbers: list) -> list:
+    """Filters and returns only even numbers from a given list."""
+    return [x for x in numbers if x % 2 == 0]
+
+if __name__ == "__main__":
+    test_nums = [0, 1, 2, 7, 14, 21, 40, 99]
+    print("=== Even / Odd Number Verification ===")
+    for num in test_nums:
+        status = "Even" if is_even(num) else "Odd"
+        print(f"Number {num:2d} -> {status}")
+
+    print("\nEven numbers up to 20:")
+    print(get_even_numbers(20))
+
+    sample_list = [12, 17, 24, 35, 48, 51, 60]
+    print(f"\nFiltered even numbers from {sample_list}:")
+    print(filter_even_numbers(sample_list))'''
+        output = """=== Even / Odd Number Verification ===
+Number  0 -> Even
+Number  1 -> Odd
+Number  2 -> Even
+Number  7 -> Odd
+Number 14 -> Even
+Number 21 -> Odd
+Number 40 -> Even
+Number 99 -> Odd
+
+Even numbers up to 20:
+[0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+
+Filtered even numbers from [12, 17, 24, 35, 48, 51, 60]:
+[12, 24, 48, 60]"""
+        t_comp = "O(1) constant check, O(N) list generation"
+        s_comp = "O(1) auxiliary check space, O(N) list storage"
+
+    elif any(k in q_lower for k in ["armstrong"]):
+        title = "Armstrong (Narcissistic) Number Verification"
+        logic = (
+            "1. An n-digit number is an Armstrong number if the sum of its digits raised to power n equals the number.\n"
+            "2. Convert number to string to determine digit count n.\n"
+            "3. Sum digit^n for each digit and compare against original value."
+        )
+        code = '''def is_armstrong(num: int) -> bool:
+    """Checks whether an integer is an Armstrong number."""
+    if num < 0:
+        return False
+    digits = [int(d) for d in str(num)]
+    power = len(digits)
+    return sum(d ** power for d in digits) == num
+
+if __name__ == "__main__":
+    samples = [153, 370, 371, 407, 120, 9474, 500]
+    print("=== Armstrong Number Verification ===")
+    for s in samples:
+        print(f"Number {s:4d} -> {'Armstrong' if is_armstrong(s) else 'Not Armstrong'}")'''
+        output = """=== Armstrong Number Verification ===
+Number  153 -> Armstrong
+Number  370 -> Armstrong
+Number  371 -> Armstrong
+Number  407 -> Armstrong
+Number  120 -> Not Armstrong
+Number 9474 -> Armstrong
+Number  500 -> Not Armstrong"""
+        t_comp = "O(d) where d is number of digits"
+        s_comp = "O(1) scalar storage"
+
+    elif any(k in q_lower for k in ["leap year"]):
+        title = "Leap Year Calculation"
+        logic = (
+            "1. A year is a leap year if divisible by 4, except end-of-century years which must be divisible by 400.\n"
+            "2. Condition: (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)."
+        )
+        code = '''def is_leap_year(year: int) -> bool:
+    """Determines whether a given year is a leap year."""
+    return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+
+if __name__ == "__main__":
+    years = [1900, 2000, 2020, 2024, 2025, 2026]
+    print("=== Leap Year Verification ===")
+    for y in years:
+        print(f"Year {y} -> {'Leap Year' if is_leap_year(y) else 'Common Year'}")'''
+        output = """=== Leap Year Verification ===
+Year 1900 -> Common Year
+Year 2000 -> Leap Year
+Year 2020 -> Leap Year
+Year 2024 -> Leap Year
+Year 2025 -> Common Year
+Year 2026 -> Common Year"""
+        t_comp = "O(1) constant time"
+        s_comp = "O(1) constant space"
+
+    elif "prime" in q_lower and "prime minister" not in q_lower:
         title = "Prime Number Verification"
         logic = (
             "1. Boundary conditions: Integers n <= 1 are not prime; 2 and 3 are prime numbers.\n"
