@@ -1,0 +1,21 @@
+Unit 2: Linear Algebra & Matrix Eigenvalues
+Course: Engineering Mathematics (GMRIT Undergraduate Curriculum)
+
+Section 1: Characteristic Equation
+For any square matrix A of size n x n, the scalar lambda is an eigenvalue of A if there exists a non-zero vector v such that:
+A * v = lambda * v
+
+This can be rearranged into the homogeneous linear system:
+(A - lambda * I) * v = 0
+
+For non-trivial solutions (v != 0) to exist, the determinant of the coefficient matrix must be zero:
+det(A - lambda * I) = 0
+
+This determinant equation is called the Characteristic Equation of matrix A.
+The roots of this polynomial equation are the eigenvalues of A.
+
+Section 2: Finding Eigenvectors
+To find the eigenvector corresponding to each eigenvalue lambda:
+1. Substitute lambda into (A - lambda * I) * v = 0.
+2. Solve the resulting system of linear equations using row reduction (Gaussian elimination).
+3. Express the solution vector in terms of free parameters.
