@@ -19,3 +19,4 @@ def render_metric_card(title: str, value: str, subtitle: str = "") -> str:
 def render_domain_badge(domain: str) -> str:
     """Generates styled domain pill badge."""
     return f'<span style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 9999px; padding: 0.2rem 0.75rem; font-size: 0.75rem; font-weight: 600;">🏷️ {domain}</span>'
+

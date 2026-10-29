@@ -1,5 +1,27 @@
 # DoubtBuster — GMRIT Student Doubt-Solving AI Tutor
 
+> **GMRIT Grand AI & NLP Student Projects — Project 14**  
+> *Practical Implementation Handbook for GMRIT Students*  
+> Department of Computer Science & Engineering, GMR Institute of Technology (GMRIT)
+
+---
+
+### 👥 Project Team Members
+| Name | Roll Number | Role |
+| :--- | :---: | :---: |
+| **M Shanmukha Rao** | `24345A0523` | **Team Leader** |
+| **D Sai Praneeth Naidu** | `23341A0570` | **Core Developer** |
+| **P Krishna Vamsi** | `23341A05I1` | **Core Developer** |
+
+### 🔗 Project & Live Demo Links
+- **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
+- **GitHub Profile:** [https://github.com/dspnaidudola](https://github.com/dspnaidudola)
+- **Streamlit Cloud Profile:** [https://share.streamlit.io/user/dspnaidudola](https://share.streamlit.io/user/dspnaidudola)
+- **Live Deployed Application:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
+- **Local Application URL:** [http://localhost:8501](http://localhost:8501)
+
+---
+
 DoubtBuster is an educational tutoring platform engineered for GMRIT undergraduate students that transforms passive answer-lookup into active learning through scaffolding hints, intermediate mathematical steps, code diagnostics, isolated sandbox execution, grounded course material RAG, and faculty intervention analytics.
 
 ---
@@ -220,13 +242,14 @@ pytest
 ---
 
 ## 13. Screenshots / Demo
-- **Live Deployment:** [Streamlit Community Cloud URL](https://share.streamlit.io)
-- **Local Verification Video:** Recorded in `assets/` and IDE video artifacts.
-- **Key Screens:**
-  1. *Home Page:* Hero header, quick prompt chips, and multi-turn pedagogical explanation.
-  2. *Math & Sandbox:* Deterministic SymPy eigenvalue analysis and isolated code execution.
-  3. *Practice Quiz & Coding Sandbox:* Automated test case validation with green pass badges.
-  4. *Faculty Dashboard:* Topic confusion heatmap, difficulty flags, and lecture intervention alerts.
+- **Live Demo App:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
+- **Streamlit Cloud Dashboard:** [https://share.streamlit.io/user/dspnaidudola](https://share.streamlit.io/user/dspnaidudola)
+- **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
+- **Local Interactive Demo:** Run `streamlit run app.py` and open **`http://localhost:8501`**
+- **Repository Visual Assets:**
+  - `assets/screenshot_home.png`: Gemini-style home dashboard with suggestion chips and streak tracking.
+  - `assets/screenshot_answer.png`: Domain-accurate step-by-step pedagogical guide with mathematical equations and takeaways.
+  - `assets/screenshot_tabs.png`: Instant Math Verifier, Python Code Diagnoser, and Sandbox execution tools.
 
 ---
 
@@ -254,7 +277,14 @@ pytest
 
 ---
 
-## 17. Credits and License
-- Developed as part of the **GMRIT Grand AI & NLP Student Projects** curriculum.
-- Built using [Streamlit](https://streamlit.io/), [SymPy](https://sympy.org/), [Plotly](https://plotly.com/), [PyPDF](https://pypi.org/project/pypdf/), [Python-PPTX](https://python-pptx.readthedocs.io/), and [Scikit-Learn](https://scikit-learn.org/).
-- Licensed under the **MIT License**.
+## 17. Credits, Team & License
+### 👥 Project Team (GMRIT CSE Students)
+- **M Shanmukha Rao (Team Leader)** — Roll No: `24345A0523`
+- **D Sai Praneeth Naidu** — Roll No: `23341A0570`
+- **P Krishna Vamsi** — Roll No: `23341A05I1`
+
+- **Institution:** Department of Computer Science & Engineering, GMR Institute of Technology (GMRIT), Rajam, Andhra Pradesh
+- **Curriculum:** GMRIT Grand AI & NLP Student Projects (Project 14 Handbook)
+- **GitHub Organization / User:** [@dspnaidudola](https://github.com/dspnaidudola)
+- **Streamlit Cloud:** [dspnaidudola](https://share.streamlit.io/user/dspnaidudola)
+- **Licensed under:** [MIT License](LICENSE)

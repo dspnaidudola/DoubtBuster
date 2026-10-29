@@ -8,6 +8,13 @@
 ### 🎓 DoubtBuster: GMRIT Student Doubt-Solving AI Tutor
 *Active Learning Scaffolding, Mathematical Verification & Course Grounding*
 
+- **Department:** Computer Science & Engineering, GMR Institute of Technology (GMRIT)
+- **Project Team:**
+  - **M Shanmukha Rao (Team Leader)** — `24345A0523`
+  - **D Sai Praneeth Naidu** — `23341A0570`
+  - **P Krishna Vamsi** — `23341A05I1`
+- **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
+- **Live Demo Link:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
 - **Target Audience:** GMRIT Undergraduate Engineering Students (CSE, AI&DS, IT, ECE)
 - **Domain:** Generative AI, Natural Language Processing, and Educational Technology
 - **Core Philosophy:** Teach intermediate reasoning, eliminate hallucinations via deterministic engines, and connect student struggles directly to classroom lectures.

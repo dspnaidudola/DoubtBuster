@@ -158,12 +158,17 @@ def detect_domain(question: str, subject: str = "") -> str:
     """Classifies a student query into 'coding', 'math', or 'theory'."""
     q_lower = (question or "").lower().strip()
 
+    # Do not treat civics prime minister as prime number code
+    if "prime minister" in q_lower:
+        return "theory"
+
     # Explicit Actionable Coding Requests
     explicit_code_action = any(phrase in q_lower for phrase in [
         "write a code", "write code", "python code", "code in python", "program to",
         "write a program", "function to", "write a function", "implement in python",
         "syntax of", "def ", "class ", "give me code", "give code", "debug this code",
-        "write a script", "code snippet"
+        "write a script", "code snippet", "code for", "program for", "how to code",
+        "script to", "script for", "python script", "write python", "code to"
     ])
     if explicit_code_action:
         return "coding"
@@ -173,10 +178,10 @@ def detect_domain(question: str, subject: str = "") -> str:
         "fizzbuzz", "palindrome", "fibonacci", "factorial", "armstrong",
         "binary search", "bubble sort", "merge sort", "quick sort", "two sum",
         "reverse string", "reverse words", "count vowels", "remove duplicates",
-        "flatten list", "check prime", "for loop in python", "while loop in python",
-        "anagram"
+        "flatten list", "check prime", "prime number", "for loop in python", "while loop in python",
+        "anagram", "matrix multiplication", "linear regression"
     ]
-    if any(k in q_lower for k in coding_problem_keywords) and ("code" in q_lower or "python" in q_lower or "function" in q_lower or "program" in q_lower):
+    if any(k in q_lower for k in coding_problem_keywords) and any(w in q_lower for w in ["code", "python", "function", "program", "script", "algorithm", "implement", "write"]):
         return "coding"
 
     # Explicit Math & Equation Cues
@@ -238,192 +243,7 @@ def extract_clean_concept_title(question: str, topic: str = "", subject: str = "
 # Dedicated Multi-Domain Dynamic Synthesizers
 # ==============================================================================
 
-def synthesize_programming_answer(question: str, subject: str, topic: str, level: str, mode: str) -> str:
-    """Generates complete, runnable, problem-tailored Python code with logic breakdown, edge cases, and test runs."""
-    q_clean = question.strip()
-    q_lower = q_clean.lower()
-
-    if "anagram" in q_lower:
-        title = "Check Anagram Strings"
-        logic = """1. Clean both input strings (convert to lowercase, remove whitespace and non-alphanumeric characters).
-2. Compare character frequency counts, or sort characters and compare sorted lists in $O(n \\log n)$ time.
-3. If lengths differ, they cannot be anagrams."""
-        code = '''def are_anagrams(s1: str, s2: str) -> bool:
-    """Checks whether two strings are valid anagrams of each other."""
-    clean_s1 = [c.lower() for c in s1 if c.isalnum()]
-    clean_s2 = [c.lower() for c in s2 if c.isalnum()]
-    if len(clean_s1) != len(clean_s2):
-        return False
-    return sorted(clean_s1) == sorted(clean_s2)
-
-if __name__ == "__main__":
-    test_pairs = [
-        ("listen", "silent"),
-        ("rail safety", "fairy tales"),
-        ("hello", "world"),
-        ("Dormitory", "Dirty room")
-    ]
-    print("=== Anagram Test Verification ===")
-    for w1, w2 in test_pairs:
-        result = are_anagrams(w1, w2)
-        print(f"'{w1}' & '{w2}' -> {'Anagram' if result else 'Not Anagram'}")'''
-        output = """=== Anagram Test Verification ===
-'listen' & 'silent' -> Anagram
-'rail safety' & 'fairy tales' -> Anagram
-'hello' & 'world' -> Not Anagram
-'Dormitory' & 'Dirty room' -> Anagram"""
-        t_comp = "O(n \\log n) where n is string length"
-        s_comp = "O(n) auxiliary space"
-
-    elif "reverse" in q_lower and ("word" in q_lower or "sentence" in q_lower):
-        title = "Reverse Words in a Sentence"
-        logic = """1. Split the sentence into individual words separated by whitespace.
-2. Reverse the list of words using slicing `[::-1]` or two-pointer reversal.
-3. Join the words back with spaces."""
-        code = '''def reverse_words(sentence: str) -> str:
-    """Reverses the order of words in a sentence while preserving word letters."""
-    if not sentence:
-        return ""
-    words = sentence.strip().split()
-    return " ".join(words[::-1])
-
-if __name__ == "__main__":
-    samples = ["The quick brown fox", "DoubtBuster AI Tutor", "Hello World"]
-    print("=== Reverse Words Verification ===")
-    for s in samples:
-        print(f"Original: '{s}' -> Reversed: '{reverse_words(s)}'")'''
-        output = """=== Reverse Words Verification ===
-Original: 'The quick brown fox' -> Reversed: 'fox brown quick The'
-Original: 'DoubtBuster AI Tutor' -> Reversed: 'Tutor AI DoubtBuster'
-Original: 'Hello World' -> Reversed: 'World Hello'"""
-        t_comp = "O(n) where n is string length"
-        s_comp = "O(n) for token storage"
-
-    elif "palindrome" in q_lower:
-        title = "Palindrome Verification"
-        logic = """1. Clean the input by converting to lowercase and stripping non-alphanumeric symbols.
-2. Use two pointers moving inward from both ends to compare characters.
-3. If all corresponding characters match, the sequence is a palindrome."""
-        code = '''def is_palindrome(s: str) -> bool:
-    """Checks whether a string or sequence reads the same backwards as forwards."""
-    cleaned = [c.lower() for c in s if c.isalnum()]
-    left, right = 0, len(cleaned) - 1
-    while left < right:
-        if cleaned[left] != cleaned[right]:
-            return False
-        left += 1
-        right -= 1
-    return True
-
-if __name__ == "__main__":
-    test_cases = ["Racecar", "A man, a plan, a canal: Panama", "Hello World", "madam"]
-    print("=== Palindrome Verification ===")
-    for text in test_cases:
-        print(f"'{text}' -> {'Palindrome' if is_palindrome(text) else 'Not Palindrome'}")'''
-        output = """=== Palindrome Verification ===
-'Racecar' -> Palindrome
-'A man, a plan, a canal: Panama' -> Palindrome
-'Hello World' -> Not Palindrome
-'madam' -> Palindrome"""
-        t_comp = "O(n) linear two-pointer scan"
-        s_comp = "O(1) auxiliary pointers"
-
-    elif "binary search" in q_lower:
-        title = "Binary Search Algorithm"
-        logic = """1. Ensure the array is sorted in non-decreasing order.
-2. Maintain `low` and `high` pointers representing the search space.
-3. Calculate `mid = low + (high - low) // 2` to prevent integer overflow.
-4. If `arr[mid] == target`, return `mid`. If `arr[mid] < target`, discard left half (`low = mid + 1`). Otherwise discard right half (`high = mid - 1`)."""
-        code = '''def binary_search(arr: list, target: int) -> int:
-    """Performs binary search on a sorted list, returning target index or -1."""
-    low, high = 0, len(arr) - 1
-    while low <= high:
-        mid = low + (high - low) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            low = mid + 1
-        else:
-            high = mid - 1
-    return -1
-
-if __name__ == "__main__":
-    nums = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]
-    targets = [23, 5, 91, 100]
-    print(f"Sorted Array: {nums}")
-    for t in targets:
-        idx = binary_search(nums, t)
-        print(f"Target {t:3d} -> Found at Index: {idx}")'''
-        output = """Sorted Array: [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]
-Target  23 -> Found at Index: 5
-Target   5 -> Found at Index: 1
-Target  91 -> Found at Index: 9
-Target 100 -> Found at Index: -1"""
-        t_comp = "O(\\log n) logarithmic time"
-        s_comp = "O(1) iterative space"
-
-    else:
-        func_name = re.sub(r'[^a-zA-Z0-9_]', '_', q_lower[:25]).strip('_')
-        func_name = f"solve_{func_name}" if func_name else "solve_custom_problem"
-        title = extract_clean_concept_title(question, topic, subject)
-
-        logic = f"""1. Formulate input specifications, data validation, and parameter constraints for '{title}'.
-2. Implement efficient transformation logic step-by-step with zero external dependencies.
-3. Return cleanly formatted output and execute edge case tests."""
-        code = f'''def {func_name}(data):
-    """
-    Solves the problem: '{title}'
-    Input: data structure or parameters.
-    Output: processed and verified output.
-    """
-    if data is None:
-        return None
-    if isinstance(data, (list, tuple)):
-        return [x for x in data if x is not None]
-    elif isinstance(data, str):
-        return data.strip()
-    return data
-
-if __name__ == "__main__":
-    sample_inputs = [[10, 20, 30], "  example text  ", 42]
-    print("=== Verification Test Runs ===")
-    for item in sample_inputs:
-        res = {func_name}(item)
-        print(f"Input: {{repr(item)}} -> Output: {{repr(res)}}")'''
-        output = """=== Verification Test Runs ===
-Input: [10, 20, 30] -> Output: [10, 20, 30]
-Input: '  example text  ' -> Output: 'example text'
-Input: 42 -> Output: 42"""
-        t_comp = "O(n) linear complexity"
-        s_comp = "O(1) auxiliary space"
-
-    return f"""### 💡 Step-by-Step Programming Guide: {title}
-
-#### 1. Algorithmic Strategy & Problem Analysis
-You asked:
-> *"{q_clean}"*
-
-**Key Implementation Steps:**
-{logic}
-
----
-
-### 🎯 Final Answer / Complete Solution
-
-```python
-{code}
-```
-
-**Expected Terminal Output:**
-```text
-{output}
-```
-
-- **Time Complexity:** ${t_comp}$
-- **Space Complexity:** ${s_comp}$
-- You can test, modify, and run this code directly in the **🧪 Python Code Diagnoser & Sandbox** tab!
-"""
-
+from backend.services.code_solutions import synthesize_programming_answer
 
 synthesize_dynamic_programming_answer = synthesize_programming_answer
 

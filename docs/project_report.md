@@ -2,9 +2,21 @@
 
 **Project Title:** DoubtBuster — GMRIT Student Doubt-Solving AI Tutor  
 **Handbook Project ID:** 14  
-**Institution:** GMR Institute of Technology (GMRIT)  
+**Institution:** GMR Institute of Technology (GMRIT), Rajam, Andhra Pradesh  
+**Department:** Department of Computer Science & Engineering  
 **Academic Year:** 2026–2027  
 **Track:** Grand AI & NLP Projects  
+
+### 👥 Project Team
+- **M Shanmukha Rao (Team Leader)** — Roll No: `24345A0523`
+- **D Sai Praneeth Naidu** — Roll No: `23341A0570`
+- **P Krishna Vamsi** — Roll No: `23341A05I1`
+
+### 🔗 Project Links
+- **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
+- **Live Streamlit App:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
+- **Developer GitHub:** [https://github.com/dspnaidudola](https://github.com/dspnaidudola)
+- **Streamlit Profile:** [https://share.streamlit.io/user/dspnaidudola](https://share.streamlit.io/user/dspnaidudola)  
 
 ---
 
