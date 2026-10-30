@@ -173,8 +173,7 @@ st.markdown(f"""
 # Sidebar Configuration
 # ==============================================================================
 with st.sidebar:
-    st.image("https://img.icons8.com/isometric/100/sparkling.png", width=56)
-    st.title("Tutor Controls")
+    st.title("✨ Tutor Controls")
 
     # New Chat action
     if st.button("✨ New Chat / Reset", use_container_width=True, type="primary"):
