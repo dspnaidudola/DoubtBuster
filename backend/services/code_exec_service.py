@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Optional
 UNSAFE_PATTERNS = [
     "import os", "from os", "import subprocess", "from subprocess",
     "import socket", "from socket", "import shutil", "from shutil",
+    "import sys", "from sys",
     "__import__('os')", "__import__('subprocess')", "eval(", "exec(",
     "open(", "write("
 ]

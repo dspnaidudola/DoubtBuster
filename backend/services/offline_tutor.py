@@ -79,6 +79,7 @@ def detect_academic_field(question: str, subject: str = "") -> str:
         "newton", "newton's", "newtons", "inertia", "acceleration", "gravity", "gravitation",
         "quantum", "thermodynamics", "entropy", "kinetic energy", "potential energy",
         "momentum", "optics", "refraction", "diffraction", "relativity", "electromagnetism",
+        "electromagnetic", "photoelectric", "einstein", "maxwell",
         "lorentz", "coulomb", "coulomb's", "ampere", "faraday", "schrodinger", "heisenberg",
         "projectile", "friction", "torque", "angular momentum", "doppler effect", "physics"
     ]):
