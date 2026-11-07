@@ -286,6 +286,58 @@ OFFLINE_QUIZ_BANK: Dict[str, List[Dict[str, Any]]] = {
             "correct": 0,
             "explanation": "The median is robust against extreme outliers and skewness, whereas the mean is easily distorted by extreme values."
         }
+    ],
+    "Computer Architecture & Microprocessors": [
+        {
+            "question": "What is the size of the physical address bus in the Intel 8086 microprocessor?",
+            "options": ["16 bits", "20 bits (addressing 1 MB)", "32 bits", "8 bits"],
+            "correct": 1,
+            "explanation": "The 8086 has a 20-bit physical address bus, allowing it to address up to 2^20 bytes = 1 Megabyte of memory."
+        },
+        {
+            "question": "How is a 20-bit physical address computed in 8086 memory segmentation?",
+            "options": [
+                "Segment Register * 10H + Offset Register",
+                "Segment Register + Offset Register",
+                "Segment Register * 20H + Offset Register",
+                "Offset Register * 16H + Segment Register"
+            ],
+            "correct": 0,
+            "explanation": "The segment base is shifted left by 4 bits (multiplied by 16 or 10H) and added to the 16-bit offset: Physical Address = (Segment * 10H) + Offset."
+        }
+    ],
+    "Physics & Engineering Sciences": [
+        {
+            "question": "According to Newton's Second Law of Motion, what is the formula relating Force (F), Mass (m), and Acceleration (a)?",
+            "options": ["F = m * a", "F = m / a", "F = 0.5 * m * v^2", "F = m * g * h"],
+            "correct": 0,
+            "explanation": "Newton's Second Law states that the net force applied to a body equals the time rate of change of momentum, simplifying for constant mass to F = m * a."
+        },
+        {
+            "question": "What does the First Law of Thermodynamics fundamentally state?",
+            "options": [
+                "Energy cannot be created or destroyed, only transformed (Conservation of Energy)",
+                "Entropy of an isolated system always increases",
+                "Absolute zero temperature cannot be attained",
+                "Heat flows spontaneously from cold to hot bodies"
+            ],
+            "correct": 0,
+            "explanation": "The First Law of Thermodynamics is the Law of Conservation of Energy: delta(U) = Q - W."
+        }
+    ],
+    "Electrical & Electronics Engineering": [
+        {
+            "question": "According to Ohm's Law, what is the relationship between Voltage (V), Current (I), and Resistance (R)?",
+            "options": ["V = I * R", "V = I / R", "I = V * R", "R = V * I"],
+            "correct": 0,
+            "explanation": "Ohm's Law states that the current through a conductor between two points is directly proportional to voltage across the two points: V = I * R."
+        },
+        {
+            "question": "What is Kirchhoff's Current Law (KCL) based on?",
+            "options": ["Conservation of Charge", "Conservation of Energy", "Conservation of Momentum", "Ohm's Law"],
+            "correct": 0,
+            "explanation": "KCL states that the algebraic sum of currents entering any electrical node is zero, which is a direct consequence of the Conservation of Electric Charge."
+        }
     ]
 }
 

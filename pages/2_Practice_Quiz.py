@@ -4,34 +4,27 @@ from backend.config import get_setting
 from backend.core.pipeline import generate_interactive_quiz, CURATED_CODING_CHALLENGES
 from backend.services.code_exec_service import run_coding_challenge, execute_python_code
 from backend.services.db_service import init_db, save_quiz_result, get_quiz_history, save_coding_attempt, get_coding_attempts
+from components.theme import inject_theme, render_header, render_quick_nav
 
 init_db()
 
-st.set_page_config(page_title="Practice & Assessment | DoubtBuster", page_icon="🧠", layout="wide")
+st.set_page_config(
+    page_title="Practice & Assessment | DoubtBuster",
+    page_icon="🧠",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-st.markdown("""
-<style>
-.quiz-header {
-    background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
-    border-radius: 16px;
-    padding: 1.5rem 2rem;
-    color: white;
-    margin-bottom: 1.5rem;
-}
-.score-badge {
-    font-size: 2rem;
-    font-weight: 800;
-    color: #4f46e5;
-}
-</style>
-""", unsafe_allow_html=True)
+inject_theme()
 
-st.markdown("""
-<div class="quiz-header">
-    <h1 style="margin:0; font-size: 2rem;">🧠 Interactive Practice & Coding Assessments</h1>
-    <p style="margin: 0.3rem 0 0 0; color: #c7d2fe;">Test your knowledge with conceptual multiple-choice quizzes and hands-on coding challenges validated in a secure sandbox.</p>
-</div>
-""", unsafe_allow_html=True)
+render_header(
+    title="🧠 Practice & Assessment Hub",
+    subtitle="Test your conceptual understanding with instant-graded MCQs and live coding challenges verified in a secure sandbox",
+    badges=["📝 Multi-Domain Quizzes", "💻 Sandbox Coding", "⚡ Instant Grading", "📈 Progress Tracking"],
+    show_stats=False
+)
+
+render_quick_nav(active="Quiz")
 
 tab_mcq, tab_coding = st.tabs([
     "📝 Multiple-Choice Conceptual Quiz",
@@ -46,25 +39,43 @@ with tab_mcq:
 
     with col_cfg1:
         subject = st.selectbox(
-            "Subject",
-            ["Programming", "Mathematics", "Machine Learning", "Deep Learning", "NLP", "Data Science"],
+            "Academic Discipline",
+            [
+                "Programming",
+                "Mathematics",
+                "Machine Learning",
+                "Deep Learning",
+                "NLP",
+                "Data Science",
+                "Computer Architecture & Microprocessors",
+                "Physics & Engineering Sciences",
+                "Electrical & Electronics Engineering"
+            ],
             key="mcq_subject"
         )
 
     with col_cfg2:
-        topic = st.text_input("Topic (optional)", placeholder="e.g. Recursion, Loss Functions, Eigenvalues", key="mcq_topic")
+        topic = st.text_input(
+            "Topic / Focus (Optional)",
+            placeholder="e.g. Recursion, Loss Functions, Eigenvalues, 8086 BIU",
+            key="mcq_topic"
+        )
 
     with col_cfg3:
-        level = st.selectbox("Difficulty", ["Beginner", "Intermediate", "Advanced"], key="mcq_level")
+        level = st.selectbox("Difficulty Level", ["Beginner", "Intermediate", "Advanced"], index=1, key="mcq_level")
 
     with col_cfg4:
         num_q = st.selectbox("Number of Questions", [3, 4, 5], index=0, key="mcq_num")
 
-    active_key = st.session_state.get("active_api_key", "") or get_setting("OPENAI_API_KEY", "")
-    chosen_model = get_setting("OPENAI_MODEL", "gpt-4o-mini")
+    active_key = st.session_state.get("active_api_key", "") or get_setting("OPENAI_API_KEY", "") or get_setting("GEMINI_API_KEY", "")
+    chosen_model = "gemini-2.5-flash" if active_key.startswith("AIza") else "gpt-4o-mini"
 
-    if st.button("🚀 Generate Quiz", type="primary"):
-        with st.spinner("Generating quiz questions..."):
+    col_btn1, col_btn2 = st.columns([1, 4])
+    with col_btn1:
+        generate_btn = st.button("🚀 Generate Quiz", type="primary", use_container_width=True)
+
+    if generate_btn:
+        with st.spinner("Generating conceptual quiz questions..."):
             try:
                 questions = generate_interactive_quiz(
                     subject=subject,
@@ -76,7 +87,7 @@ with tab_mcq:
                 )
                 st.session_state["quiz_questions"] = questions
                 st.session_state["quiz_subject"] = subject
-                st.session_state["quiz_topic"] = topic or "General"
+                st.session_state["quiz_topic"] = topic or "Core Concepts"
                 st.session_state["quiz_submitted"] = False
                 st.session_state["user_answers"] = {}
                 st.rerun()
@@ -96,7 +107,7 @@ with tab_mcq:
                     st.markdown(f"**Question {idx + 1}:** {q['question']}")
                     opts = q.get("options", [])
                     user_choice = st.radio(
-                        f"Select answer for Q{idx + 1}:",
+                        f"Select your answer for Q{idx + 1}:",
                         options=range(len(opts)),
                         format_func=lambda i, opts=opts: f"{chr(65 + i)}) {opts[i]}",
                         key=f"q_{idx}"
@@ -104,17 +115,17 @@ with tab_mcq:
                     user_selections[idx] = user_choice
                     st.markdown("---")
 
-                submit_quiz = st.form_submit_button("🏁 Submit Quiz for Grading", type="primary")
+                submit_quiz = st.form_submit_button("🏁 Submit Quiz for Instant Grading", type="primary")
 
                 if submit_quiz:
                     st.session_state["user_answers"] = user_selections
                     st.session_state["quiz_submitted"] = True
-                    
+
                     score = 0
                     for idx, q in enumerate(questions):
                         if user_selections.get(idx) == q.get("correct"):
                             score += 1
-                    
+
                     st.session_state["quiz_score"] = score
                     save_quiz_result(
                         subject=st.session_state.get("quiz_subject", "General"),
@@ -132,27 +143,28 @@ with tab_mcq:
             res_col1, res_col2 = st.columns([1, 2])
             with res_col1:
                 st.markdown(f"""
-                <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; text-align: center;">
-                    <div style="font-size: 0.9rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Your Score</div>
-                    <div class="score-badge">{score} / {total}</div>
-                    <div style="font-size: 1.2rem; font-weight: 700; color: {'#16a34a' if pct >= 70 else '#ea580c'};">{pct}%</div>
+                <div style="background: rgba(255, 255, 255, 0.04); border: 2px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 1.8rem; text-align: center;">
+                    <div style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Final Score</div>
+                    <div style="font-size: 2.8rem; font-weight: 800; color: #38bdf8; margin: 0.2rem 0;">{score} / {total}</div>
+                    <div style="font-size: 1.3rem; font-weight: 700; color: {'#10b981' if pct >= 70 else '#f59e0b'};">{pct}% Mastery</div>
                 </div>
                 """, unsafe_allow_html=True)
+
                 if pct >= 80:
                     st.balloons()
                     st.success("🌟 Outstanding performance! You have a solid grasp of these concepts.")
                 elif pct >= 60:
                     st.info("👍 Good effort! Review the detailed solutions below to solidify your understanding.")
                 else:
-                    st.warning("💪 Review the concepts and solutions below, then try another quiz!")
+                    st.warning("💪 Review the concepts and explanations below, then try another quiz!")
 
-                if st.button("🔄 Retake or New Quiz"):
+                if st.button("🔄 Retake or Generate New Quiz", type="secondary", use_container_width=True):
                     st.session_state["quiz_submitted"] = False
                     st.session_state["quiz_questions"] = None
                     st.rerun()
 
             with res_col2:
-                st.markdown("### 📋 Step-by-Step Question Review")
+                st.markdown("### 📋 Step-by-Step Question Review & Solutions")
                 user_answers = st.session_state.get("user_answers", {})
                 for idx, q in enumerate(questions):
                     user_ans_idx = user_answers.get(idx)
@@ -173,11 +185,11 @@ with tab_mcq:
                                 st.markdown(f"⚪ {prefix}{opt}")
 
                         st.markdown("---")
-                        st.markdown(f"**💡 Explanation:** {q.get('explanation', 'Review core principles.')}")
+                        st.markdown(f"**💡 Explanation:** {q.get('explanation', 'Review foundational principles.')}")
 
     # Past Quiz Performance from SQLite
     st.divider()
-    st.subheader("📊 Your Past Quiz History")
+    st.subheader("📊 Your Recent Quiz Records")
     past_quizzes = get_quiz_history(limit=5)
     if not past_quizzes:
         st.info("No past quiz records yet. Complete a quiz above to record your score!")
@@ -198,22 +210,22 @@ with tab_mcq:
 # ==========================================
 with tab_coding:
     st.markdown("### 💻 Live Coding Challenges with Test-Case Verification")
-    st.caption("Write solutions to algorithmic, mathematics, or ML challenges and run them in our isolated Python sandbox.")
+    st.caption("Write solutions to algorithmic, mathematics, or ML challenges and run them in our isolated Python sandbox with automated test case evaluation.")
 
-    code_subject = st.selectbox("Subject for Coding Challenges", list(CURATED_CODING_CHALLENGES.keys()), key="code_subj_select")
+    code_subject = st.selectbox("Select Discipline", list(CURATED_CODING_CHALLENGES.keys()), key="code_subj_select")
     available_challenges = CURATED_CODING_CHALLENGES[code_subject]
 
     challenge_titles = [c["title"] for c in available_challenges]
-    selected_ch_title = st.selectbox("Select Challenge", challenge_titles)
+    selected_ch_title = st.selectbox("Select Coding Challenge", challenge_titles)
     selected_ch = next(c for c in available_challenges if c["title"] == selected_ch_title)
 
     st.markdown(f"#### 📌 Problem: {selected_ch['title']}")
     st.info(selected_ch["description"])
 
     user_code_attempt = st.text_area(
-        "Your Solution Code:",
+        "Your Solution Code (Python):",
         value=selected_ch["starter_code"],
-        height=180,
+        height=200,
         key=f"code_editor_{selected_ch_title}"
     )
 
@@ -238,7 +250,7 @@ with tab_coding:
                     execution_time_ms=eval_res.get("execution_time_ms", 0.0)
                 )
 
-                st.markdown("#### Test Case Results:")
+                st.markdown("#### Test Case Breakdown:")
                 for idx, tc in enumerate(eval_res["results"], start=1):
                     p_icon = "✅ Passed" if tc["passed"] else "❌ Failed"
                     st.markdown(f"- **Test Case {idx}:** {p_icon} | **Input:** `{tc['input']}` | **Expected:** `{tc['expected']}` | **Actual:** `{tc['actual']}`")
@@ -252,4 +264,4 @@ with tab_coding:
             pass_status = "✅ Passed" if ca["passed"] == 1 else "❌ Failed"
             st.write(f"**{ca['challenge_name']}** ({ca['subject']}) — {pass_status} ({ca['execution_time_ms']} ms) at {ca['timestamp'][:16].replace('T', ' ')}")
     else:
-        st.info("No coding challenges submitted yet. Try one above!")
+        st.info("No coding challenges submitted yet. Complete one above!")

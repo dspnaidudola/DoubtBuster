@@ -13,12 +13,12 @@
 | **D Sai Praneeth Naidu** | `23341A0570` | **Core Developer** |
 | **P Krishna Vamsi** | `23341A05I1` | **Core Developer** |
 
-### 🔗 Project & Live Demo Links
+### 🔗 Project & Local Demonstration Links
 - **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
-- **GitHub Profile:** [https://github.com/dspnaidudola](https://github.com/dspnaidudola)
-- **Streamlit Cloud Profile:** [https://share.streamlit.io/user/dspnaidudola](https://share.streamlit.io/user/dspnaidudola)
-- **Live Deployed Application:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
-- **Local Application URL:** [http://localhost:8501](http://localhost:8501)
+- **Local System Demo:** Run `streamlit run app.py` ➔ **`http://localhost:8501`**
+- **Architecture & System Design:** [`docs/architecture.md`](file:///c:/Users/dspna/OneDrive/Desktop/FSI/DoubtBuster/docs/architecture.md)
+- **Comprehensive Project Report:** [`docs/project_report.md`](file:///c:/Users/dspna/OneDrive/Desktop/FSI/DoubtBuster/docs/project_report.md)
+- **Performance & Benchmark Report:** [`docs/performance_report.md`](file:///c:/Users/dspna/OneDrive/Desktop/FSI/DoubtBuster/docs/performance_report.md)
 
 ---
 
@@ -242,10 +242,8 @@ pytest
 ---
 
 ## 13. Screenshots / Demo
-- **Live Demo App:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
-- **Streamlit Cloud Dashboard:** [https://share.streamlit.io/user/dspnaidudola](https://share.streamlit.io/user/dspnaidudola)
-- **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
 - **Local Interactive Demo:** Run `streamlit run app.py` and open **`http://localhost:8501`**
+- **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
 - **Repository Visual Assets:**
   - `assets/screenshot_home.png`: Gemini-style home dashboard with suggestion chips and streak tracking.
   - `assets/screenshot_answer.png`: Domain-accurate step-by-step pedagogical guide with mathematical equations and takeaways.

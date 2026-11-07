@@ -14,9 +14,8 @@
 
 ### 🔗 Project Links
 - **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
-- **Live Streamlit App:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
-- **Developer GitHub:** [https://github.com/dspnaidudola](https://github.com/dspnaidudola)
-- **Streamlit Profile:** [https://share.streamlit.io/user/dspnaidudola](https://share.streamlit.io/user/dspnaidudola)  
+- **Local Application URL:** `http://localhost:8501` (Executed via `streamlit run app.py`)
+- **Developer GitHub:** [https://github.com/dspnaidudola](https://github.com/dspnaidudola)  
 
 ---
 

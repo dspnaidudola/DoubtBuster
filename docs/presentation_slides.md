@@ -14,7 +14,7 @@
   - **D Sai Praneeth Naidu** — `23341A0570`
   - **P Krishna Vamsi** — `23341A05I1`
 - **GitHub Repository:** [https://github.com/dspnaidudola/DoubtBuster](https://github.com/dspnaidudola/DoubtBuster)
-- **Live Demo Link:** [https://doubtbuster.streamlit.app](https://doubtbuster.streamlit.app)
+- **Local Demonstration URL:** `http://localhost:8501` (`streamlit run app.py`)
 - **Target Audience:** GMRIT Undergraduate Engineering Students (CSE, AI&DS, IT, ECE)
 - **Domain:** Generative AI, Natural Language Processing, and Educational Technology
 - **Core Philosophy:** Teach intermediate reasoning, eliminate hallucinations via deterministic engines, and connect student struggles directly to classroom lectures.

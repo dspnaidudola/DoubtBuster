@@ -1,7 +1,7 @@
 # DoubtBuster — Architecture & Technical Specifications
 
 **Project 14:** DoubtBuster — GMRIT Student Doubt-Solving AI Tutor  
-**Deployment Platform:** Streamlit Community Cloud (Single-Deployment Architecture)
+**Execution Environment:** Localhost / University Workstation (`streamlit run app.py` on `http://localhost:8501`)
 
 ---
 

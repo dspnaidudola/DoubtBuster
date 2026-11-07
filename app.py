@@ -17,118 +17,21 @@ from backend.services.db_service import (
     init_db, get_student_stats, toggle_bookmark, toggle_difficult, rate_doubt, get_history, get_difficult_topics
 )
 from backend.services.offline_tutor import detect_domain, detect_academic_field
+from components.theme import inject_theme, render_header, render_quick_nav
 
 # Initialize database
 init_db()
 
 # Page configuration
 st.set_page_config(
-    page_title="DoubtBuster | Gemini-Style AI Academic Companion",
+    page_title="DoubtBuster | Universal AI Academic Companion",
     page_icon="✨",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling for modern Gemini-like UI
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-html, body, [class*="css"] {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-/* Gemini Hero Header */
-.gemini-header-card {
-    background: linear-gradient(135deg, #090d16 0%, #111827 50%, #1e1b4b 100%);
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    border-radius: 18px;
-    padding: 1.5rem 2rem;
-    color: white;
-    margin-bottom: 1.2rem;
-    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.3);
-}
-
-.gemini-gradient-title {
-    font-size: 2.2rem;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: -0.02em;
-    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.gemini-subtitle {
-    color: #94a3b8;
-    font-size: 0.98rem;
-    margin-top: 0.3rem;
-}
-
-.gemini-badge-container {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.8rem;
-    flex-wrap: wrap;
-}
-
-.gemini-badge {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 0.25rem 0.7rem;
-    border-radius: 9999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #e2e8f0;
-}
-
-/* Welcome Card for Empty State */
-.welcome-container {
-    text-align: center;
-    padding: 3rem 1.5rem 2rem 1.5rem;
-    max-width: 820px;
-    margin: 0 auto;
-}
-
-.welcome-title {
-    font-size: 2.4rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
-}
-
-.welcome-desc {
-    color: #64748b;
-    font-size: 1.05rem;
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-
-/* Suggestion Chips */
-.chip-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 0.8rem;
-    margin-top: 1rem;
-    text-align: left;
-}
-
-.domain-pill {
-    background: rgba(59, 130, 246, 0.12);
-    border: 1px solid rgba(59, 130, 246, 0.28);
-    color: #38bdf8;
-    padding: 0.2rem 0.55rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    display: inline-block;
-    margin-bottom: 0.3rem;
-}
-</style>
-""", unsafe_allow_html=True)
+# Apply global cutting-edge design system
+inject_theme()
 
 # Initialize Session State Variables
 if "chat_messages" not in st.session_state:
@@ -145,35 +48,31 @@ stats = get_student_stats()
 adaptive_suggestion = get_adaptive_difficulty(stats)
 
 # ==============================================================================
-# Header
+# Signature Hero Header & Quick Switcher
 # ==============================================================================
-st.markdown(f"""
-<div class="gemini-header-card">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
-        <div>
-            <h1 class="gemini-gradient-title">✨ DoubtBuster</h1>
-            <p class="gemini-subtitle">Gemini-Style Universal AI Academic Tutor — On-the-fly multi-domain reasoning & mathematical verification</p>
-            <div class="gemini-badge-container">
-                <span class="gemini-badge">⚡ Dynamic Synthesis (Zero Static Answers)</span>
-                <span class="gemini-badge">🌐 All Academic Domains</span>
-                <span class="gemini-badge">🧮 SymPy Engine</span>
-                <span class="gemini-badge">🧪 Isolated Sandbox</span>
-            </div>
-        </div>
-        <div style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 0.6rem 1rem; text-align: center; min-width: 130px; margin-top: 0.4rem;">
-            <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Study Streak</div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: #38bdf8;">🔥 {stats.get('study_streak', 0)} <span style="font-size: 0.85rem; font-weight: 600; color: #cbd5e1;">days</span></div>
-            <div style="font-size: 0.72rem; color: #64748b;">{stats.get('total_doubts', 0)} doubts resolved</div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+render_header(
+    title="✨ DoubtBuster",
+    subtitle="Universal AI Academic Tutor — On-the-fly multi-domain reasoning, SymPy math verification & isolated sandbox",
+    badges=[
+        "⚡ Dynamic Synthesis",
+        "🌐 All Disciplines",
+        "🧮 SymPy Engine",
+        "🧪 Secure Sandbox",
+        f"🎯 Level: {adaptive_suggestion}"
+    ],
+    streak=stats.get("study_streak", 0),
+    doubts_count=stats.get("total_doubts", 0),
+    show_stats=True
+)
+
+# Navigation Bar
+render_quick_nav(active="Home")
 
 # ==============================================================================
 # Sidebar Configuration
 # ==============================================================================
 with st.sidebar:
-    st.title("✨ Tutor Controls")
+    st.markdown("### ⚙️ Tutor Controls")
 
     # New Chat action
     if st.button("✨ New Chat / Reset", use_container_width=True, type="primary"):
@@ -181,17 +80,27 @@ with st.sidebar:
         st.session_state["pending_prompt"] = ""
         st.rerun()
 
-    st.info("🌐 **Universal AI Assistant:** Doubts across all fields (AI/ML, CS, Microprocessors, Engineering, Sciences, Math, Humanities) are answered with zero configuration.")
-    subject = "Universal"
-    topic = ""
+    st.markdown("---")
 
-    st.caption(f"🎯 **Adaptive Level:** Recommended **{adaptive_suggestion}**.")
-    level = st.select_slider("Skill Level", options=["Beginner", "Intermediate", "Advanced"], value=adaptive_suggestion)
+    # 1. Pedagogical Mode & Level
+    st.markdown("#### 🎓 Pedagogical Settings")
+    st.caption(f"🎯 **Adaptive System Suggestion:** `{adaptive_suggestion}`")
+    level = st.select_slider(
+        "Skill Level",
+        options=["Beginner", "Intermediate", "Advanced"],
+        value=adaptive_suggestion,
+        key="global_skill_level"
+    )
 
     mode = st.radio(
         "Pedagogical Mode",
-        ["Step-by-step explanation", "Hint first", "Verify my answer", "Practice question with answer key"],
-        help="Hint first guides you with questions; Verify my answer evaluates your attempt."
+        [
+            "Step-by-step explanation",
+            "Hint first",
+            "Verify my answer",
+            "Practice question with answer key"
+        ],
+        help="Step-by-step: full conceptual guide; Hint first: guided Socratic hints; Verify: evaluates your attempt."
     )
 
     user_attempt = ""
@@ -199,35 +108,40 @@ with st.sidebar:
         user_attempt = st.text_area(
             "Your attempt / reasoning to verify:",
             height=85,
-            placeholder="Type your preliminary answer or reasoning here..."
+            placeholder="Type your preliminary answer or reasoning here...",
+            key="verify_attempt_input"
         )
 
-    language = st.selectbox("Language", ["English", "Simple English", "Telugu (Technical mix)", "Hindi (Technical mix)"])
+    language = st.selectbox(
+        "Response Language",
+        ["English", "Simple English", "Telugu (Technical mix)", "Hindi (Technical mix)"],
+        key="global_lang_select"
+    )
 
-    st.divider()
+    st.markdown("---")
 
-    # RAG File Upload
-    st.subheader("📎 Course Material & Grounding")
+    # 2. RAG Course Document Grounding
+    st.markdown("#### 📎 Course Material & Grounding")
     uploaded = st.file_uploader(
-        "Attach Document (PDF, PPTX, TXT, PY, CSV)",
+        "Attach Notes (PDF, PPTX, TXT, PY, MD, CSV)",
         type=["pdf", "pptx", "txt", "py", "md", "csv"],
-        help="Upload lecture notes, textbooks, or assignments."
+        help="Upload lecture notes, textbooks, or syllabus problem sheets."
     )
     rag_toggle = False
     if uploaded:
         st.success(f"📎 Attached: **{uploaded.name}**")
         rag_toggle = st.checkbox("Ground response strictly in document (RAG Citations)", value=True)
 
-    st.divider()
+    st.markdown("---")
 
-    # AI Engine & Key
-    st.subheader("🔑 AI Provider & Engine")
+    # 3. AI Engine Configuration
+    st.markdown("#### 🔑 AI Engine & Provider")
     saved_openai_key = get_setting("OPENAI_API_KEY", "")
     saved_gemini_key = get_setting("GEMINI_API_KEY", "") or get_setting("GOOGLE_API_KEY", "")
 
     provider_choice = st.selectbox(
-        "AI Engine",
-        ["Auto-detect / Built-in Pedagogical Mode", "Google Gemini (2.5 Flash)", "OpenAI (GPT-4o)"],
+        "AI Engine Provider",
+        ["Auto-detect / Free Built-in Mode", "Google Gemini (2.5 Flash)", "OpenAI (GPT-4o)", "Groq (LLaMA-3.3)"],
         index=0
     )
 
@@ -235,17 +149,17 @@ with st.sidebar:
         "API Key (Optional)",
         value=saved_gemini_key if "Gemini" in provider_choice else (saved_openai_key if "OpenAI" in provider_choice else ""),
         type="password",
-        placeholder="AIza... or sk-...",
-        help="Leave blank to use the Built-in Pedagogical Tutor with SymPy math engine."
+        placeholder="AIza... / sk-... / gsk_...",
+        help="Leave blank to use the Built-in Zero-Config Engine with SymPy math solver."
     )
     st.session_state["active_api_key"] = api_key_input.strip()
 
     if st.button("🔌 Test Provider Connection", use_container_width=True):
         if not api_key_input.strip():
-            st.info("No key provided. Built-in Offline Mode is 100% active with zero rate limits!")
+            st.info("ℹ️ No custom key provided. Built-in Offline Mode is 100% active with zero rate limits!")
         else:
-            with st.spinner("Testing API key..."):
-                model_to_test = "gemini-2.5-flash" if "Gemini" in provider_choice else "gpt-4o-mini"
+            with st.spinner("Testing API key connection..."):
+                model_to_test = "gemini-2.5-flash" if "Gemini" in provider_choice else ("llama-3.3-70b-versatile" if "Groq" in provider_choice else "gpt-4o-mini")
                 res = test_api_connection(api_key_input.strip(), model=model_to_test)
                 if res.get("success"):
                     st.success(res.get("message"))
@@ -257,117 +171,124 @@ with st.sidebar:
     else:
         st.caption("💡 **Active:** Built-in Universal Pedagogical Engine (0 cost, SymPy math solver, dynamic code execution).")
 
-    st.divider()
-    st.caption("DoubtBuster • Gemini-Style Multi-Domain AI Companion")
+    st.markdown("---")
+    st.caption("DoubtBuster • Project 14 • GMRIT Academic Companion")
 
 # ==============================================================================
 # Workspace Tabs
 # ==============================================================================
 tab_chat, tab_math, tab_code, tab_history = st.tabs([
-    "💬 Gemini AI Chatbot",
-    "🧮 Instant Math & Equation Verifier",
-    "🧪 Python Code Diagnoser & Sandbox",
-    "📊 Learning History & Bookmarks"
+    "💬 AI Tutor Chat (Gemini Canvas)",
+    "🧮 Math & Equation Studio (SymPy)",
+    "🧪 Python Sandbox & Code Diagnoser",
+    "📚 Learning History & Bookmarks"
 ])
 
-# Quick suggestion prompts for the Gemini Empty State
-GEMINI_SUGGESTIONS = [
+# Quick suggestion prompt starters for empty state
+PROMPT_STARTERS = [
     {
-        "title": "🔬 Physics & Mechanics",
-        "prompt": "Explain Newton's second law of motion with formula and how force relates to acceleration."
+        "domain": "💻 Computer Architecture",
+        "title": "Intel 8086 Architecture",
+        "prompt": "Explain the Intel 8086 microprocessor internal architecture, detailing the difference between the BIU and EU, 6-byte instruction queue, and memory segmentation."
     },
     {
-        "title": "📐 Mathematics & Equations",
-        "prompt": "Solve the linear equation 3x + 12 = 33 step-by-step."
+        "domain": "🤖 AI & Machine Learning",
+        "title": "CNN & Backpropagation",
+        "prompt": "How does backpropagation compute gradient descent in deep convolutional neural networks with ReLU and MaxPooling?"
     },
     {
-        "title": "🐍 Computer Science & Coding",
-        "prompt": "Write a python function to check if two strings are anagrams with test cases."
+        "domain": "🐍 Algorithms & DS",
+        "title": "Recursion & Call Stack",
+        "prompt": "How does recursion utilize the system call stack in Python? Write a recursive binary search with base cases and time complexity."
     },
     {
-        "title": "🌿 Biology & Life Sciences",
-        "prompt": "What is photosynthesis and how does it produce glucose?"
+        "domain": "📐 Mathematics & Calculus",
+        "title": "Symbolic Calculus Derivation",
+        "prompt": "Find the symbolic derivative of f(x) = x^3 + 4*x^2 - 10 and calculate its critical points."
     },
     {
-        "title": "📊 Economics & Market Forces",
-        "prompt": "Explain the law of supply and demand and market clearing equilibrium price."
+        "domain": "⚡ Electrical & Microcontrollers",
+        "title": "8051 Microcontroller & Timers",
+        "prompt": "Explain the Intel 8051 microcontroller architecture, Harvard memory organization, and how timer mode 1 functions."
     },
     {
-        "title": "⚡ Electrical & Microcontrollers",
-        "prompt": "Explain the 8051 microcontroller architecture and memory organization."
-    },
-    {
-        "title": "🏛️ Civics & History",
-        "prompt": "Who was the prime minister of India in 1947 and what was their constitutional role?"
-    },
-    {
-        "title": "🧪 Chemistry & Reaction Bonds",
-        "prompt": "Explain chemical bonding and the difference between ionic and covalent bonds."
+        "domain": "🔬 Physics & Engineering",
+        "title": "Photoelectric Effect & Photons",
+        "prompt": "Explain the photoelectric effect, Einstein's photon hypothesis, and the work function equation with physical significance."
     }
 ]
 
 # ==============================================================================
-# TAB 1: GEMINI AI CHATBOT
+# TAB 1: AI TUTOR CHAT
 # ==============================================================================
 with tab_chat:
-    # 1. Render Welcome Screen if conversation is empty
+    # 1. Welcome Screen if conversation is empty
     if len(st.session_state["chat_messages"]) == 0:
         st.markdown("""
-        <div class="welcome-container">
-            <h1 class="welcome-title">Hello, Scholar 👋</h1>
-            <p class="welcome-desc">What would you like to master or solve today? Ask questions across any field — equations, algorithms, sciences, economics, or humanities. Every response is dynamically synthesized strictly for your specific domain.</p>
+        <div style="text-align: center; padding: 2.5rem 1.5rem 1.8rem 1.5rem; max-width: 860px; margin: 0 auto;">
+            <h2 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;">
+                Hello, Scholar 👋
+            </h2>
+            <p style="color: #94a3b8; font-size: 1.05rem; margin-bottom: 2rem; line-height: 1.6;">
+                What would you like to master today? Ask doubts across <strong>Computer Science, Calculus, Microprocessors, AI/ML, Engineering, or Sciences</strong>. Every answer is synthesized dynamically with step-by-step logic, LaTeX math, and verified code.
+            </p>
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("**💡 Try these prompt starters (click to ask):**")
-        cols = st.columns(4)
-        for i, sug in enumerate(GEMINI_SUGGESTIONS):
-            col = cols[i % 4]
+        st.markdown("**💡 Quick Prompt Starters (Click any card to start learning):**")
+        p_cols = st.columns(3)
+        for i, ps in enumerate(PROMPT_STARTERS):
+            col = p_cols[i % 3]
             with col:
-                if st.button(f"**{sug['title']}**\n\n_{sug['prompt'][:50]}..._", key=f"sug_btn_{i}", use_container_width=True):
-                    st.session_state["pending_prompt"] = sug["prompt"]
+                btn_label = f"**{ps['domain']}**\n\n_{ps['title']}_\n\n{ps['prompt'][:75]}..."
+                if st.button(btn_label, key=f"starter_btn_{i}", use_container_width=True):
+                    st.session_state["pending_prompt"] = ps["prompt"]
                     st.rerun()
 
-    # 2. Render Existing Chat Messages in Gemini Style
+    # 2. Render Existing Chat Messages
     for idx, msg in enumerate(st.session_state["chat_messages"]):
         if msg["role"] == "user":
             with st.chat_message("user", avatar="🧑‍🎓"):
                 st.markdown(msg["content"])
+                if msg.get("timestamp"):
+                    st.caption(f"Sent at {msg['timestamp']}")
         else:
             with st.chat_message("assistant", avatar="✨"):
                 field_label = msg.get("field", "Universal Science")
                 st.markdown(f'<span class="domain-pill">🏷️ {field_label}</span>', unsafe_allow_html=True)
                 st.markdown(msg["content"])
 
-                # Action row for bookmarking, rating, practice
-                col_a1, col_a2, col_a3, col_a4 = st.columns([1, 1, 1, 2])
+                # Interactive Action Row
                 doubt_id = msg.get("doubt_id")
+                col_a1, col_a2, col_a3, col_a4 = st.columns([1, 1, 1, 1.8])
                 with col_a1:
                     if st.button("⭐ Bookmark", key=f"bm_{idx}"):
                         if doubt_id:
                             is_bm = toggle_bookmark(doubt_id)
                             st.toast("Bookmarked in Learning History!" if is_bm else "Bookmark removed!")
                         else:
-                            st.toast("Response noted!")
+                            st.toast("Marked for quick revision!")
                 with col_a2:
+                    if st.button("📌 Flag Difficult", key=f"diff_{idx}"):
+                        if doubt_id:
+                            toggle_difficult(doubt_id)
+                            st.toast("Added to personalized revision planner!")
+                        else:
+                            st.toast("Flagged for faculty review!")
+                with col_a3:
                     if st.button("👍 Helpful", key=f"up_{idx}"):
                         if doubt_id:
                             rate_doubt(doubt_id, 1)
                         st.toast("Thank you for your feedback!")
-                with col_a3:
-                    if st.button("📌 Flag Topic", key=f"diff_{idx}"):
-                        if doubt_id:
-                            toggle_difficult(doubt_id)
-                            st.toast("Added to revision list!")
                 with col_a4:
                     if st.button("🧠 Practice Challenge", key=f"prac_{idx}"):
-                        st.session_state["pending_prompt"] = f"Generate a similar practice problem with worked answer key based on this question: {msg.get('question_ref', '')}"
+                        st.session_state["pending_prompt"] = f"Generate a similar practice problem with worked answer key based on this concept: {msg.get('question_ref', '')[:100]}"
                         st.rerun()
 
     # 3. Floating Bottom Chat Input
-    chat_prompt = st.chat_input("Ask DoubtBuster anything across any domain (e.g. solve equation, write code, explain concept)...")
+    chat_prompt = st.chat_input("Ask DoubtBuster anything across any domain (e.g. solve equation, write algorithm, explain concept)...")
 
-    # Determine prompt to process (either from input box or from clicked chip)
+    # Determine prompt to process
     prompt_to_process = None
     if chat_prompt:
         prompt_to_process = chat_prompt.strip()
@@ -379,20 +300,19 @@ with tab_chat:
         try:
             validate_question(prompt_to_process)
 
-            # Display user message immediately
+            # Display student message immediately
             with st.chat_message("user", avatar="🧑‍🎓"):
                 st.markdown(prompt_to_process)
 
-            # Generate response
+            # Synthesize pedagogical response
             with st.chat_message("assistant", avatar="✨"):
-                with st.spinner("Analyzing question & dynamically synthesizing domain explanation..."):
+                with st.spinner("Analyzing question & synthesizing domain explanation..."):
                     active_key = st.session_state.get("active_api_key", "")
-                    chosen_model = "gemini-2.5-flash" if "Gemini" in provider_choice else "gpt-4o-mini"
+                    chosen_model = "gemini-2.5-flash" if "Gemini" in provider_choice else ("llama-3.3-70b-versatile" if "Groq" in provider_choice else "gpt-4o-mini")
 
-                    # Identify true domain directly from student's prompt
                     effective_field = detect_academic_field(prompt_to_process)
 
-                    # Check RAG mode
+                    # Check RAG document grounding
                     if uploaded and rag_toggle:
                         sections = parse_course_document(uploaded, uploaded.name)
                         chunks = chunk_sections(sections)
@@ -407,7 +327,7 @@ with tab_chat:
                         answer = answer_doubt(
                             question=query_with_doc,
                             subject=effective_field,
-                            topic=topic.strip(),
+                            topic="",
                             level=level,
                             mode=mode,
                             language=language,
@@ -417,7 +337,7 @@ with tab_chat:
                             persist=True
                         )
 
-                    # Get recent doubt ID for bookmarking
+                    # Retrieve recent doubt ID from SQLite for bookmark actions
                     recent_hist = get_history(limit=1)
                     doubt_id = recent_hist[0]["id"] if recent_hist else None
 
@@ -425,11 +345,12 @@ with tab_chat:
                     st.markdown(f'<span class="domain-pill">🏷️ {effective_field}</span>', unsafe_allow_html=True)
                     st.markdown(answer)
 
-                    # Append to session state chat thread
+                    # Update session state messages
+                    now_str = datetime.now().strftime("%I:%M %p")
                     st.session_state["chat_messages"].append({
                         "role": "user",
                         "content": prompt_to_process,
-                        "timestamp": datetime.now().strftime("%I:%M %p")
+                        "timestamp": now_str
                     })
                     st.session_state["chat_messages"].append({
                         "role": "assistant",
@@ -437,12 +358,8 @@ with tab_chat:
                         "field": effective_field,
                         "question_ref": prompt_to_process,
                         "doubt_id": doubt_id,
-                        "timestamp": datetime.now().strftime("%I:%M %p")
+                        "timestamp": now_str
                     })
-
-                    # Track session topic
-                    if topic.strip() and topic.strip() not in st.session_state["session_topics"]:
-                        st.session_state["session_topics"].append(topic.strip())
 
                     st.rerun()
 
@@ -452,18 +369,25 @@ with tab_chat:
             st.error(f"❌ Could not complete request: {exc}")
 
 # ==============================================================================
-# TAB 2: INSTANT MATH & EQUATION VERIFIER
+# TAB 2: MATH & EQUATION STUDIO (SYMPY)
 # ==============================================================================
 with tab_math:
-    st.markdown("#### 🧮 Deterministic SymPy Mathematical Engine")
-    st.caption("Verify calculus, algebraic equations, limits, and matrices with zero AI hallucinations.")
+    st.markdown("### 🧮 Deterministic SymPy Mathematical Engine")
+    st.caption("Verify calculus derivations, algebraic equations, limits, and matrix properties with 100% mathematical precision and zero hallucinations.")
 
     math_col1, math_col2 = st.columns([1.2, 1])
 
     with math_col1:
         math_mode = st.selectbox(
             "Select Mathematical Operation",
-            ["Solve Equation (f(x) = 0)", "Symbolic Derivative", "Indefinite Integral", "Simplify Expression", "Limit (x -> 0)", "Matrix Analysis"]
+            [
+                "Solve Equation (f(x) = 0)",
+                "Symbolic Derivative",
+                "Indefinite Integral",
+                "Simplify Expression",
+                "Limit (x -> 0)",
+                "Matrix Analysis"
+            ]
         )
 
         if math_mode == "Matrix Analysis":
@@ -487,7 +411,11 @@ with tab_math:
                 else:
                     st.error(f"Error computing matrix: {res['error']}")
         else:
-            expr_val = st.text_input("Expression", value="3*x + 12 = 33", placeholder="e.g. x**2 - 5*x + 6, sin(x), 3*x + 12 = 33")
+            expr_val = st.text_input(
+                "Expression / Equation",
+                value="3*x + 12 = 33",
+                placeholder="e.g. x**2 - 5*x + 6, sin(x), 3*x + 12 = 33"
+            )
             var_sym = st.text_input("Variable", value="x", max_chars=2)
             op_map = {
                 "Solve Equation (f(x) = 0)": "solve",
@@ -496,7 +424,7 @@ with tab_math:
                 "Simplify Expression": "simplify",
                 "Limit (x -> 0)": "limit"
             }
-            calc_math = st.button("Calculate Step", type="primary")
+            calc_math = st.button("Calculate Step-by-Step", type="primary")
 
             if calc_math:
                 res = solve_math_expression(expr_val, operation=op_map[math_mode], variable=var_sym)
@@ -513,10 +441,10 @@ with tab_math:
 
     with math_col2:
         st.markdown("""
-        <div style="background: #f1f5f9; border-radius: 12px; padding: 1.2rem; border: 1px solid #cbd5e1;">
-            <h4 style="margin-top:0;">📝 Syntax Guide for Math & Equations</h4>
-            <p style="font-size:0.85rem; color:#475569;">Write math expressions in natural or Python syntax:</p>
-            <ul style="font-size:0.85rem; color:#475569; padding-left:1.2rem;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1.2rem;">
+            <h4 style="margin-top:0; color: #38bdf8;">📝 Mathematical Syntax Guide</h4>
+            <p style="font-size:0.85rem; color:#94a3b8;">Write math expressions in natural or Python syntax:</p>
+            <ul style="font-size:0.85rem; color:#cbd5e1; padding-left:1.2rem; line-height: 1.7;">
                 <li><strong>Equations:</strong> <code>3x + 12 = 33</code> or <code>x**2 - 5*x + 6 = 0</code></li>
                 <li><strong>Powers:</strong> <code>x^2</code> or <code>x**2</code></li>
                 <li><strong>Multiplication:</strong> <code>2x</code> or <code>2*x</code>, <code>3(x+1)</code></li>
@@ -529,15 +457,15 @@ with tab_math:
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# TAB 3: PYTHON CODE DIAGNOSER & SANDBOX
+# TAB 3: PYTHON SANDBOX & CODE DIAGNOSER
 # ==============================================================================
 with tab_code:
-    st.markdown("#### 🧪 Safe Python AST Code Diagnoser & Secure Sandbox Execution")
-    st.caption("Inspect syntax and logic statically, then run your code safely in an isolated sandbox with a 3-second timeout.")
+    st.markdown("### 🧪 Safe Python AST Code Diagnoser & Secure Sandbox")
+    st.caption("Inspect syntax statically, detect unsafe modules, and run Python code safely in an isolated subprocess with a 3-second timeout.")
 
     code_to_check = st.text_area(
         "Paste or write Python code here:",
-        height=200,
+        height=220,
         value="""def calculate_sum(n):
     total = 0
     for i in range(1, n + 1):
@@ -550,7 +478,7 @@ print("Sum 1..10 is:", calculate_sum(10))
 
     col_c1, col_c2 = st.columns([1, 1])
     with col_c1:
-        if st.button("🔍 Diagnose Code Statically", type="primary"):
+        if st.button("🔍 Diagnose Code Statically", type="primary", use_container_width=True):
             diag = diagnose_python_code(code_to_check)
             if not diag["success"]:
                 st.warning(diag["error"])
@@ -559,7 +487,7 @@ print("Sum 1..10 is:", calculate_sum(10))
                     st.success("✅ **Code passed static syntax and safety checks!**")
                 else:
                     if not diag["syntax_ok"]:
-                        st.error("❌ **Syntax Error Found!**")
+                        st.error("❌ **Syntax Error Detected:**")
                     else:
                         st.warning("⚠️ **Potential Issues Detected:**")
 
@@ -567,8 +495,8 @@ print("Sum 1..10 is:", calculate_sum(10))
                         st.markdown(f"- {issue}")
 
     with col_c2:
-        if st.button("▶️ Execute in Secure Sandbox", type="secondary"):
-            with st.spinner("Running in isolated environment..."):
+        if st.button("▶️ Execute in Secure Sandbox", type="secondary", use_container_width=True):
+            with st.spinner("Running in isolated sandbox subprocess..."):
                 run_res = execute_python_code(code_to_check, timeout_sec=3.0)
                 if run_res["success"]:
                     st.success(f"Execution Succeeded ({run_res['execution_time_ms']} ms)")
@@ -581,20 +509,20 @@ print("Sum 1..10 is:", calculate_sum(10))
 # TAB 4: LEARNING HISTORY & BOOKMARKS
 # ==============================================================================
 with tab_history:
-    st.markdown("#### 📊 Student Learning History & Concept Bookmarks")
-    st.caption("Review your past doubts, bookmarked questions, and revision areas.")
+    st.markdown("### 📚 Student Learning History & Concept Bookmarks")
+    st.caption("Review your past doubts, bookmarked questions, and revision areas directly from SQLite.")
 
-    history_items = get_history(limit=20)
+    history_items = get_history(limit=25)
     if history_items:
         for h in history_items:
-            with st.expander(f"📌 {h.get('subject', 'General')} — {h.get('question', '')[:60]}... ({h.get('created_at', '')[:10]})"):
+            with st.expander(f"📌 {h.get('subject', 'General')} — {h.get('question', '')[:65]}... ({h.get('created_at', '')[:10]})"):
                 st.markdown(f"**Question:** {h.get('question')}")
-                st.markdown(f"**Discipline:** `{h.get('subject')}` | **Topic:** `{h.get('topic') or 'N/A'}`")
-                st.markdown(f"**Rating:** {h.get('rating', 0)} | **Bookmarked:** {'⭐ Yes' if h.get('bookmarked') else 'No'} | **Flagged Difficult:** {'📌 Yes' if h.get('flagged_difficult') else 'No'}")
+                st.markdown(f"**Discipline:** `{h.get('subject')}` | **Topic:** `{h.get('topic') or 'General'}`")
+                st.markdown(f"**Rating:** {h.get('rating', 0)} | **Bookmarked:** {'⭐ Yes' if h.get('bookmarked') else 'No'} | **Flagged Difficult:** {'📌 Yes' if h.get('marked_difficult') else 'No'}")
                 st.divider()
                 st.markdown(h.get("answer", ""))
     else:
-        st.info("No learning history recorded yet. Start chatting in the **💬 Gemini AI Chatbot** tab!")
+        st.info("No learning history recorded yet. Start chatting in the **💬 AI Tutor Chat** tab!")
 
 st.markdown("---")
-st.markdown('<p style="text-align: center; color: #64748b; font-size: 0.85rem;">DoubtBuster • Gemini-Style AI Academic Companion • Streamlit Native</p>', unsafe_allow_html=True)
+st.markdown('<p style="text-align: center; color: #64748b; font-size: 0.85rem;">DoubtBuster • Project 14 • GMRIT Student Academic Companion</p>', unsafe_allow_html=True)
