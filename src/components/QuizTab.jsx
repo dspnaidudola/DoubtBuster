@@ -1,9 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Terminal, CheckCircle2, XCircle, Award, RotateCcw, Play, Clock, Sparkles } from 'lucide-react';
+import {
+  BookOpen,
+  Terminal,
+  CheckCircle2,
+  XCircle,
+  Award,
+  RotateCcw,
+  Play,
+  Clock,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+  BarChart3,
+  Check,
+  AlertCircle
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MathContent } from '../utils/mathRenderer';
 
-export default function QuizTab() {
+export default function QuizTab({ onRefreshStats }) {
   const [subTab, setSubTab] = useState('mcq');
 
   // MCQ State
@@ -13,10 +29,15 @@ export default function QuizTab() {
   const [numQuestions, setNumQuestions] = useState(3);
   const [loading, setLoading] = useState(false);
   const [questions, setQuestions] = useState(null);
+  const [currentQIdx, setCurrentQIdx] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizHistory, setQuizHistory] = useState([]);
+
+  // Active Timer state (in seconds)
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
 
   // Coding Challenges State
   const [challengesData, setChallengesData] = useState({});
@@ -33,6 +54,17 @@ export default function QuizTab() {
     fetchChallenges();
     fetchCodingHistory();
   }, []);
+
+  // Timer Tick
+  useEffect(() => {
+    let interval = null;
+    if (timerRunning && !submitted) {
+      interval = setInterval(() => {
+        setTimerSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerRunning, submitted]);
 
   const fetchQuizHistory = async () => {
     try {
@@ -73,6 +105,9 @@ export default function QuizTab() {
     setQuestions(null);
     setUserAnswers({});
     setSubmitted(false);
+    setCurrentQIdx(0);
+    setTimerSeconds(0);
+    setTimerRunning(false);
 
     try {
       const query = new URLSearchParams({
@@ -84,6 +119,7 @@ export default function QuizTab() {
       const res = await fetch(`/api/quiz/generate?${query.toString()}`);
       const data = await res.json();
       setQuestions(data.questions || []);
+      setTimerRunning(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -91,8 +127,18 @@ export default function QuizTab() {
     }
   };
 
+  const handleSelectOption = (qIdx, opt) => {
+    if (submitted) return;
+    setUserAnswers((prev) => ({
+      ...prev,
+      [qIdx]: opt
+    }));
+  };
+
   const handleSubmitQuiz = async () => {
     if (!questions) return;
+    setTimerRunning(false);
+
     let score = 0;
     questions.forEach((q, idx) => {
       if (userAnswers[idx] === q.correct) {
@@ -104,10 +150,10 @@ export default function QuizTab() {
     setSubmitted(true);
 
     const pct = Math.round((score / questions.length) * 100);
-    if (pct >= 80) {
+    if (pct >= 70) {
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 90,
+        spread: 80,
         origin: { y: 0.6 }
       });
     }
@@ -125,6 +171,7 @@ export default function QuizTab() {
         })
       });
       fetchQuizHistory();
+      if (onRefreshStats) onRefreshStats();
     } catch (e) {
       console.error(e);
     }
@@ -151,6 +198,7 @@ export default function QuizTab() {
       const data = await res.json();
       setEvalResult(data);
       fetchCodingHistory();
+      if (onRefreshStats) onRefreshStats();
     } catch (err) {
       setEvalResult({ success: false, error: err.message });
     } finally {
@@ -158,32 +206,41 @@ export default function QuizTab() {
     }
   };
 
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const activeChallengeList = challengesData[codingSubject] || [];
   const currentChallenge = activeChallengeList[selectedChallengeIdx];
 
+  const totalAnswered = Object.keys(userAnswers).length;
+  const progressPct = questions ? Math.round((totalAnswered / questions.length) * 100) : 0;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto w-full">
       {/* Sub Tab Switcher */}
-      <div className="flex gap-2 p-1 bg-slate-900/80 border border-white/10 rounded-xl w-fit">
+      <div className="flex gap-2 p-1 bg-[#0D1222] border border-white/10 rounded-xl w-fit">
         <button
           onClick={() => setSubTab('mcq')}
           className={`py-2 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
             subTab === 'mcq'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#7867FF] text-white shadow-lg shadow-[#7867FF]/30'
+              : 'text-[#A1AEC4] hover:text-white'
           }`}
         >
-          <BookOpen className="w-3.5 h-3.5" /> Multiple-Choice Conceptual Quiz
+          <BookOpen className="w-4 h-4" /> Multiple-Choice Conceptual Quiz
         </button>
         <button
           onClick={() => setSubTab('coding')}
           className={`py-2 px-4 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
             subTab === 'coding'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-[#7867FF] text-white shadow-lg shadow-[#7867FF]/30'
+              : 'text-[#A1AEC4] hover:text-white'
           }`}
         >
-          <Terminal className="w-3.5 h-3.5" /> Live Coding Challenges & Sandbox
+          <Terminal className="w-4 h-4" /> Live Coding Challenges & Sandbox
         </button>
       </div>
 
@@ -192,8 +249,12 @@ export default function QuizTab() {
       {/* ========================================================= */}
       {subTab === 'mcq' && (
         <div className="space-y-6">
+          {/* Generation Form */}
           <div className="glass-card p-6">
-            <h4 className="text-sm font-bold text-white mb-4">Quiz Generation Setup</h4>
+            <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#22C8E5]" />
+              Generate Academic Practice Quiz
+            </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
@@ -202,7 +263,7 @@ export default function QuizTab() {
                 <select
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full text-xs bg-[#0D1222]"
                 >
                   <option>Programming</option>
                   <option>Mathematics</option>
@@ -218,25 +279,25 @@ export default function QuizTab() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Topic / Sub-field (Optional)
+                  Specific Topic (Optional)
                 </label>
                 <input
                   type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="e.g. Recursion, Loss Functions"
-                  className="w-full text-xs"
+                  placeholder="e.g. Recursion, CNNs, 8086"
+                  className="w-full text-xs bg-[#0D1222]"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Difficulty
+                  Difficulty Level
                 </label>
                 <select
                   value={level}
                   onChange={(e) => setLevel(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full text-xs bg-[#0D1222]"
                 >
                   <option>Beginner</option>
                   <option>Intermediate</option>
@@ -246,355 +307,332 @@ export default function QuizTab() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Questions
+                  Questions Count
                 </label>
                 <select
                   value={numQuestions}
                   onChange={(e) => setNumQuestions(Number(e.target.value))}
-                  className="w-full text-xs"
+                  className="w-full text-xs bg-[#0D1222]"
                 >
                   <option value={3}>3 Questions</option>
-                  <option value={4}>4 Questions</option>
                   <option value={5}>5 Questions</option>
+                  <option value={10}>10 Questions</option>
                 </select>
               </div>
             </div>
 
-            <button
-              onClick={handleGenerateQuiz}
-              disabled={loading}
-              className="btn-primary mt-4 py-2 px-5 text-xs"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              {loading ? 'Generating Questions...' : 'Generate Interactive Quiz'}
-            </button>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={handleGenerateQuiz}
+                disabled={loading}
+                className="btn-primary py-2.5 px-6 text-xs font-semibold"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                <span>{loading ? 'Synthesizing Questions...' : 'Start Practice Quiz'}</span>
+              </button>
+            </div>
           </div>
 
-          {/* Active Questions Panel */}
+          {/* Active Quiz Card */}
           {questions && questions.length > 0 && (
-            <div className="space-y-6">
-              {!submitted ? (
-                <div className="space-y-5">
-                  {questions.map((q, qIdx) => (
-                    <div key={qIdx} className="glass-card p-6 space-y-4">
-                      <div className="text-sm font-bold text-white flex gap-2">
-                        <span className="text-indigo-400">Q{qIdx + 1}.</span>
-                        <MathContent content={q.question} />
-                      </div>
-
-                      <div className="space-y-2 pt-2">
-                        {q.options.map((opt, oIdx) => (
-                          <label
-                            key={oIdx}
-                            onClick={() => setUserAnswers((prev) => ({ ...prev, [qIdx]: oIdx }))}
-                            className={`flex items-center gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
-                              userAnswers[qIdx] === oIdx
-                                ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                                : 'bg-slate-900/40 border-white/5 text-slate-300 hover:bg-white/5'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={`q_${qIdx}`}
-                              checked={userAnswers[qIdx] === oIdx}
-                              onChange={() => {}}
-                              className="accent-indigo-500"
-                            />
-                            <span className="font-semibold">{String.fromCharCode(65 + oIdx)})</span>
-                            <MathContent content={opt} />
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-
-                  <button
-                    onClick={handleSubmitQuiz}
-                    disabled={Object.keys(userAnswers).length < questions.length}
-                    className="btn-primary py-3 px-6 w-full text-sm font-bold"
-                  >
-                    🏁 Submit Quiz for Instant Grading ({Object.keys(userAnswers).length}/{questions.length} answered)
-                  </button>
+            <div className="glass-card p-6 space-y-6 animate-slide-up border-[#7867FF]/30">
+              {/* Quiz Header Bar: Progress, Question Counter, Timer */}
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1 rounded-full bg-[#7867FF]/20 border border-[#7867FF]/35 text-[#7867FF] text-xs font-bold">
+                    Question {currentQIdx + 1} of {questions.length}
+                  </div>
+                  <span className="text-xs text-slate-400">
+                    {totalAnswered} of {questions.length} answered
+                  </span>
                 </div>
-              ) : (
-                /* Results Review Panel */
-                <div className="space-y-6">
-                  <div className="glass-card p-8 text-center border-indigo-500/40 bg-indigo-950/20">
-                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                      Assessment Score
-                    </div>
-                    <div className="text-5xl font-extrabold text-sky-400 mb-2">
-                      {quizScore} / {questions.length}
-                    </div>
-                    <div className="text-base font-bold text-emerald-400 mb-4">
-                      {Math.round((quizScore / questions.length) * 100)}% Conceptual Mastery
-                    </div>
-                    <button onClick={handleGenerateQuiz} className="btn-secondary text-xs">
-                      <RotateCcw className="w-3.5 h-3.5" /> Retake or Generate New Quiz
-                    </button>
+
+                {/* Timer Display */}
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0D1222] border border-white/10 text-xs font-mono font-bold text-[#22C8E5]">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Time: {formatTimer(timerSeconds)}</span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#7867FF] to-[#22C8E5] transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                ></div>
+              </div>
+
+              {/* Question Navigation Pill Chips */}
+              <div className="flex flex-wrap gap-2">
+                {questions.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentQIdx(i)}
+                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                      currentQIdx === i
+                        ? 'bg-[#7867FF] text-white shadow-md shadow-[#7867FF]/40'
+                        : userAnswers[i]
+                        ? 'bg-[#22C8E5]/20 text-[#22C8E5] border border-[#22C8E5]/40'
+                        : 'bg-white/5 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              {/* Current Question Body */}
+              {questions[currentQIdx] && (
+                <div className="p-6 rounded-2xl bg-[#0D1222] border border-white/10 space-y-5">
+                  <div className="text-base font-bold text-white leading-relaxed">
+                    <MathContent content={questions[currentQIdx].question} />
                   </div>
 
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-white">📋 Question-by-Question Solution Review</h4>
-                    {questions.map((q, qIdx) => {
-                      const userChoice = userAnswers[qIdx];
-                      const isCorrect = userChoice === q.correct;
+                  {/* Options List */}
+                  <div className="space-y-3">
+                    {questions[currentQIdx].options.map((opt, optIdx) => {
+                      const isSelected = userAnswers[currentQIdx] === opt;
+                      const isCorrect = questions[currentQIdx].correct === opt;
+
+                      let optClasses = 'border-white/10 bg-[#141B2D]/60 hover:bg-[#1B2438] text-slate-200';
+                      if (submitted) {
+                        if (isCorrect) {
+                          optClasses = 'border-emerald-500 bg-emerald-950/40 text-emerald-300 font-semibold';
+                        } else if (isSelected && !isCorrect) {
+                          optClasses = 'border-rose-500 bg-rose-950/40 text-rose-300';
+                        }
+                      } else if (isSelected) {
+                        optClasses = 'border-[#7867FF] bg-[#7867FF]/15 text-white font-semibold ring-1 ring-[#7867FF]';
+                      }
 
                       return (
                         <div
-                          key={qIdx}
-                          className={`glass-card p-5 border ${
-                            isCorrect ? 'border-emerald-500/40' : 'border-rose-500/40'
-                          }`}
+                          key={optIdx}
+                          onClick={() => handleSelectOption(currentQIdx, opt)}
+                          className={`p-4 rounded-xl border text-xs sm:text-sm cursor-pointer transition-all flex items-center justify-between ${optClasses}`}
                         >
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div className="text-sm font-bold text-white flex gap-2">
-                              <span>Q{qIdx + 1}.</span>
-                              <MathContent content={q.question} />
-                            </div>
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 flex items-center gap-1 ${
-                                isCorrect
-                                  ? 'bg-emerald-500/15 text-emerald-300'
-                                  : 'bg-rose-500/15 text-rose-300'
-                              }`}
-                            >
-                              {isCorrect ? (
-                                <>
-                                  <CheckCircle2 className="w-3 h-3" /> Correct
-                                </>
-                              ) : (
-                                <>
-                                  <XCircle className="w-3 h-3" /> Incorrect
-                                </>
-                              )}
+                          <div className="flex items-center gap-3">
+                            <span className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center font-bold text-xs text-slate-400 shrink-0">
+                              {String.fromCharCode(65 + optIdx)}
                             </span>
+                            <MathContent content={opt} />
                           </div>
 
-                          <div className="space-y-1.5 text-xs">
-                            {q.options.map((opt, oIdx) => (
-                              <div
-                                key={oIdx}
-                                className={`p-2 rounded-lg ${
-                                  oIdx === q.correct
-                                    ? 'bg-emerald-500/15 text-emerald-200 font-semibold border border-emerald-500/30'
-                                    : oIdx === userChoice && !isCorrect
-                                    ? 'bg-rose-500/15 text-rose-300 font-semibold border border-rose-500/30'
-                                    : 'text-slate-400'
-                                }`}
-                              >
-                                {String.fromCharCode(65 + oIdx)}) <MathContent content={opt} />
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="mt-4 pt-3 border-t border-white/5 text-xs text-slate-300 bg-white/5 p-3 rounded-lg">
-                            <span className="font-bold text-indigo-400">💡 Explanation: </span>
-                            <MathContent content={q.explanation} />
-                          </div>
+                          {submitted && isCorrect && (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
+                          )}
+                          {submitted && isSelected && !isCorrect && (
+                            <XCircle className="w-4 h-4 text-rose-400 shrink-0 ml-2" />
+                          )}
                         </div>
                       );
                     })}
                   </div>
+
+                  {/* Explanation (Shown when submitted) */}
+                  {submitted && questions[currentQIdx].explanation && (
+                    <div className="p-4 rounded-xl bg-indigo-950/40 border border-[#7867FF]/30 text-xs text-slate-300 space-y-1 animate-slide-up">
+                      <div className="font-bold text-[#22C8E5] flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Conceptual Explanation:
+                      </div>
+                      <MathContent content={questions[currentQIdx].explanation} />
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Past Quizzes List */}
-          {quizHistory.length > 0 && (
-            <div className="glass-card p-6 mt-8">
-              <h4 className="text-sm font-bold text-white mb-3">📊 Your Recent Quiz Records</h4>
-              <div className="space-y-2 text-xs">
-                {quizHistory.map((qh, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center p-3 rounded-lg bg-slate-900/50 border border-white/5"
+              {/* Navigation Controls between questions */}
+              <div className="flex justify-between items-center pt-2">
+                <button
+                  onClick={() => setCurrentQIdx((prev) => Math.max(prev - 1, 0))}
+                  disabled={currentQIdx === 0}
+                  className="btn-secondary py-2 px-4 text-xs font-semibold disabled:opacity-40"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Previous
+                </button>
+
+                {!submitted ? (
+                  currentQIdx === questions.length - 1 ? (
+                    <button
+                      onClick={handleSubmitQuiz}
+                      className="btn-primary py-2 px-6 text-xs font-semibold"
+                    >
+                      <span>Submit Quiz</span>
+                      <CheckCircle2 className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setCurrentQIdx((prev) => Math.min(prev + 1, questions.length - 1))}
+                      className="btn-primary py-2 px-4 text-xs font-semibold"
+                    >
+                      Next <ChevronRight className="w-4 h-4" />
+                    </button>
+                  )
+                ) : (
+                  <button
+                    onClick={handleGenerateQuiz}
+                    className="btn-secondary py-2 px-4 text-xs font-semibold"
                   >
-                    <div>
-                      <strong className="text-white">{qh.subject}</strong> — {qh.topic}
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sky-400 font-bold">
-                        {qh.score}/{qh.total_questions} ({qh.percentage}%)
-                      </span>
-                      <span className="text-slate-500 text-[11px]">
-                        {qh.timestamp?.slice(0, 10)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                    <RotateCcw className="w-4 h-4" /> Retake Another Quiz
+                  </button>
+                )}
               </div>
+
+              {/* Results Summary Box when submitted */}
+              {submitted && (
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-[#7867FF]/20 to-[#22C8E5]/15 border border-[#7867FF]/40 text-center space-y-3 animate-slide-up">
+                  <div className="inline-flex p-3 rounded-full bg-[#7867FF]/30 text-white shadow-lg">
+                    <Award className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-extrabold text-white">
+                    Quiz Completed!
+                  </h3>
+                  <div className="text-4xl font-extrabold text-gradient">
+                    {quizScore} / {questions.length}
+                  </div>
+                  <p className="text-xs text-slate-300">
+                    Accuracy Score: <strong className="text-[#22C8E5]">{Math.round((quizScore / questions.length) * 100)}%</strong> • Time: <span className="font-mono">{formatTimer(timerSeconds)}</span>
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* SUB TAB 2: LIVE CODING CHALLENGES                         */}
+      {/* SUB TAB 2: CODING CHALLENGES                             */}
       {/* ========================================================= */}
       {subTab === 'coding' && (
         <div className="space-y-6">
           <div className="glass-card p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Select Discipline
-                </label>
-                <select
-                  value={codingSubject}
-                  onChange={(e) => {
-                    const newSubj = e.target.value;
-                    setCodingSubject(newSubj);
+            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-[#22C8E5]" />
+              Verified Subprocess Coding Challenges
+            </h4>
+
+            {/* Subject Selector */}
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(challengesData).map((subj) => (
+                <button
+                  key={subj}
+                  onClick={() => {
+                    setCodingSubject(subj);
                     setSelectedChallengeIdx(0);
-                    const list = challengesData[newSubj] || [];
+                    const list = challengesData[subj] || [];
                     if (list.length > 0) setUserCode(list[0].starter_code);
                     setEvalResult(null);
                   }}
-                  className="w-full text-xs"
+                  className={`py-1.5 px-3 rounded-xl text-xs font-semibold transition-all ${
+                    codingSubject === subj
+                      ? 'bg-[#7867FF] text-white shadow-md'
+                      : 'bg-white/5 text-slate-400 hover:text-white'
+                  }`}
                 >
-                  {Object.keys(challengesData).map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Select Coding Challenge
-                </label>
-                <select
-                  value={selectedChallengeIdx}
-                  onChange={(e) => {
-                    const idx = Number(e.target.value);
-                    setSelectedChallengeIdx(idx);
-                    if (activeChallengeList[idx]) {
-                      setUserCode(activeChallengeList[idx].starter_code);
-                    }
-                    setEvalResult(null);
-                  }}
-                  className="w-full text-xs"
-                >
-                  {activeChallengeList.map((ch, idx) => (
-                    <option key={idx} value={idx}>
-                      {ch.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  {subj}
+                </button>
+              ))}
             </div>
 
-            {currentChallenge && (
-              <div className="p-4 rounded-xl bg-slate-900/80 border border-white/10 space-y-2">
-                <div className="text-sm font-bold text-sky-400">📌 Problem: {currentChallenge.title}</div>
-                <p className="text-xs text-slate-300 leading-relaxed">{currentChallenge.description}</p>
+            {/* Challenge List Buttons */}
+            {activeChallengeList.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+                {activeChallengeList.map((ch, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedChallengeIdx(idx);
+                      setUserCode(ch.starter_code);
+                      setEvalResult(null);
+                    }}
+                    className={`py-1.5 px-3 rounded-lg text-xs font-medium transition-all ${
+                      selectedChallengeIdx === idx
+                        ? 'bg-[#22C8E5]/20 border border-[#22C8E5]/40 text-[#22C8E5]'
+                        : 'bg-white/5 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {ch.title}
+                  </button>
+                ))}
               </div>
             )}
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
-                solution.py (Python 3.13)
-              </label>
-              <textarea
-                rows={10}
-                value={userCode}
-                onChange={(e) => setUserCode(e.target.value)}
-                className="w-full font-mono text-xs md:text-sm bg-slate-950 p-4 text-emerald-300 border-slate-800 leading-relaxed"
-                spellCheck={false}
-              />
-            </div>
-
-            <button
-              onClick={handleRunCodingChallenge}
-              disabled={evalLoading}
-              className="btn-primary py-2.5 px-6 text-xs font-bold"
-            >
-              <Play className="w-4 h-4 fill-white" />
-              {evalLoading ? 'Executing Test Cases in Sandbox...' : 'Run & Verify Against Test Cases'}
-            </button>
           </div>
 
-          {/* Test Case Evaluation Results */}
-          {evalResult && (
-            <div className="glass-card p-6 space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Award className="w-4 h-4 text-indigo-400" />
-                  Test Case Evaluation Results
-                </h4>
-                {evalResult.execution_time_ms && (
-                  <span className="text-xs text-slate-400 flex items-center gap-1 font-mono">
-                    <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    {evalResult.execution_time_ms} ms
+          {currentChallenge && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Problem Description Panel */}
+              <div className="lg:col-span-5 glass-card p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-lg font-bold text-white">{currentChallenge.title}</h4>
+                  <span className="domain-badge text-[10px]">
+                    {currentChallenge.difficulty || 'Medium'}
                   </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  {currentChallenge.description}
+                </p>
+
+                {currentChallenge.example && (
+                  <div className="p-3.5 rounded-xl bg-[#080B16] border border-white/10 font-mono text-xs text-slate-300">
+                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">Example:</div>
+                    {currentChallenge.example}
+                  </div>
                 )}
               </div>
 
-              {evalResult.all_passed ? (
-                <div className="p-3 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <strong>All Test Cases Passed! Your algorithmic solution is correct and verified.</strong>
+              {/* Editor & Runner Panel */}
+              <div className="lg:col-span-7 glass-card p-6 space-y-4">
+                <div className="flex justify-between items-center text-xs text-slate-400">
+                  <span className="font-mono">solution.py</span>
+                  <span>Python 3.13 Subprocess Sandbox</span>
                 </div>
-              ) : (
-                <div className="p-3 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-                  <XCircle className="w-4 h-4" />
-                  <span>Some test cases failed or runtime error occurred. Review the breakdown below.</span>
-                </div>
-              )}
 
-              {evalResult.results && (
-                <div className="space-y-2">
-                  {evalResult.results.map((tc, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-lg border text-xs flex justify-between items-center font-mono ${
-                        tc.passed
-                          ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
-                          : 'bg-rose-950/20 border-rose-500/30 text-rose-300'
-                      }`}
-                    >
-                      <div className="space-y-0.5">
-                        <div>
-                          <strong>Test Case {idx + 1}:</strong> {tc.passed ? '✅ Passed' : '❌ Failed'}
-                        </div>
-                        <div className="text-[11px] text-slate-400">
-                          Input: <code>{JSON.stringify(tc.input)}</code>
-                        </div>
-                      </div>
-                      <div className="text-right text-[11px]">
-                        <div>Expected: <code>{JSON.stringify(tc.expected)}</code></div>
-                        <div>Actual: <code>{JSON.stringify(tc.actual)}</code></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                <textarea
+                  rows={10}
+                  value={userCode}
+                  onChange={(e) => setUserCode(e.target.value)}
+                  className="w-full font-mono text-xs sm:text-sm bg-[#080B16] border border-white/10 rounded-xl p-3.5 text-slate-100"
+                />
 
-          {/* Coding Challenge History */}
-          {codingHistory.length > 0 && (
-            <div className="glass-card p-6">
-              <h4 className="text-sm font-bold text-white mb-3">📜 Past Coding Submissions</h4>
-              <div className="space-y-2 text-xs">
-                {codingHistory.map((ca, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center p-3 rounded-lg bg-slate-900/50 border border-white/5"
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleRunCodingChallenge}
+                    disabled={evalLoading}
+                    className="btn-primary py-2.5 px-5 text-xs font-semibold"
                   >
-                    <div>
-                      <strong className="text-white">{ca.challenge_name}</strong> ({ca.subject})
+                    <Play className="w-4 h-4 fill-white" />
+                    <span>{evalLoading ? 'Executing Test Cases...' : 'Submit & Run Test Cases'}</span>
+                  </button>
+                </div>
+
+                {/* Challenge Result */}
+                {evalResult && (
+                  <div className="p-4 rounded-xl bg-[#0D1222] border border-white/10 space-y-2 animate-slide-up text-xs">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                      <span className="font-bold text-white">Test Case Evaluation</span>
+                      {evalResult.all_passed ? (
+                        <span className="text-emerald-400 font-bold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> All Tests Passed!
+                        </span>
+                      ) : (
+                        <span className="text-rose-400 font-bold flex items-center gap-1">
+                          <XCircle className="w-3.5 h-3.5" /> Some Tests Failed
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className={ca.passed === 1 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
-                        {ca.passed === 1 ? '✅ Passed' : '❌ Failed'} ({ca.execution_time_ms} ms)
-                      </span>
-                      <span className="text-slate-500 text-[11px]">
-                        {ca.timestamp?.slice(0, 10)}
-                      </span>
+
+                    <div className="text-slate-300 leading-relaxed">
+                      {evalResult.feedback || evalResult.error}
                     </div>
+
+                    {evalResult.execution_time_ms && (
+                      <div className="text-[11px] text-slate-500 font-mono">
+                        Execution Runtime: {evalResult.execution_time_ms} ms
+                      </div>
+                    )}
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
@@ -603,4 +641,3 @@ export default function QuizTab() {
     </div>
   );
 }
-

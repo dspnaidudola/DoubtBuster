@@ -7,9 +7,6 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
-  resolve: {
-    preserveSymlinks: true
-  },
   server: {
     port: 3000,
     host: true,

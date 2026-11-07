@@ -1,8 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Bookmark, Flag, Search, Trash2, Download, AlertCircle, Calendar, Tag } from 'lucide-react';
+import {
+  Bookmark,
+  Flag,
+  Search,
+  Trash2,
+  Download,
+  AlertCircle,
+  Calendar,
+  Tag,
+  MessageSquare,
+  Sparkles,
+  ArrowRight,
+  Filter
+} from 'lucide-react';
 import { MathContent } from '../utils/mathRenderer';
 
-export default function HistoryTab() {
+export default function HistoryTab({ onContinueInChat }) {
   const [historyItems, setHistoryItems] = useState([]);
   const [difficultTopics, setDifficultTopics] = useState([]);
   const [search, setSearch] = useState('');
@@ -10,6 +23,7 @@ export default function HistoryTab() {
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
   const [difficultOnly, setDifficultOnly] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
     fetchHistory();
@@ -63,6 +77,7 @@ export default function HistoryTab() {
     try {
       await fetch(`/api/history/${id}`, { method: 'DELETE' });
       setHistoryItems((prev) => prev.filter((item) => item.id !== id));
+      setConfirmDeleteId(null);
     } catch (e) {
       console.error(e);
     }
@@ -110,7 +125,31 @@ export default function HistoryTab() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto w-full animate-slide-up">
+      {/* Title Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h3 className="text-2xl font-extrabold text-white flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#7867FF]/20 border border-[#7867FF]/35 text-[#7867FF]">
+              <Calendar className="w-5 h-5" />
+            </div>
+            Student Learning History & Revision Log
+          </h3>
+          <p className="text-[#A1AEC4] text-xs sm:text-sm mt-1">
+            Browse previous academic queries, review mathematical derivations, and recall past tutor solutions.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <button onClick={handleExportMarkdown} className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5">
+            <Download className="w-3.5 h-3.5" /> Export Markdown
+          </button>
+          <button onClick={handleExportCSV} className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1.5">
+            <Download className="w-3.5 h-3.5" /> CSV
+          </button>
+        </div>
+      </div>
+
       {/* Difficult Topics Revision Planner Card */}
       {difficultTopics.length > 0 && (
         <div className="glass-card p-6 border-amber-500/30 bg-amber-950/15">
@@ -119,11 +158,11 @@ export default function HistoryTab() {
             Personalized Revision Planner (Challenging Concepts)
           </h4>
           <p className="text-xs text-amber-200/80 mb-4">
-            These concepts challenged you during recent sessions. Prioritize revising them before exams:
+            These concepts were flagged during your sessions. Prioritize revisiting them before upcoming tests:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             {difficultTopics.slice(0, 4).map((dt, i) => (
-              <div key={i} className="p-3 rounded-xl bg-slate-900/60 border border-amber-500/20 text-xs">
+              <div key={i} className="p-3.5 rounded-xl bg-[#080B16] border border-amber-500/25 text-xs">
                 <div className="font-bold text-white mb-0.5">{dt.topic}</div>
                 <div className="text-[11px] text-amber-300/80 mb-1">{dt.subject}</div>
                 <div className="text-[10px] text-slate-400">Flagged {dt.count} times</div>
@@ -144,7 +183,7 @@ export default function HistoryTab() {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && fetchHistory()}
               placeholder="Search past doubts..."
-              className="w-full pl-9 text-xs"
+              className="w-full pl-9 text-xs bg-[#0D1222]"
             />
           </div>
 
@@ -152,7 +191,7 @@ export default function HistoryTab() {
             <select
               value={subjectFilter}
               onChange={(e) => setSubjectFilter(e.target.value)}
-              className="w-full text-xs"
+              className="w-full text-xs bg-[#0D1222]"
             >
               <option value="">All Academic Disciplines</option>
               <option value="Computer Science & Programming">Computer Science & Programming</option>
@@ -171,7 +210,7 @@ export default function HistoryTab() {
                 type="checkbox"
                 checked={bookmarkedOnly}
                 onChange={(e) => setBookmarkedOnly(e.target.checked)}
-                className="accent-indigo-500"
+                className="accent-[#7867FF]"
               />
               <span>⭐ Bookmarked</span>
             </label>
@@ -181,19 +220,14 @@ export default function HistoryTab() {
                 type="checkbox"
                 checked={difficultOnly}
                 onChange={(e) => setDifficultOnly(e.target.checked)}
-                className="accent-indigo-500"
+                className="accent-[#7867FF]"
               />
               <span>📌 Difficult</span>
             </label>
           </div>
 
-          <div className="flex gap-2 justify-end">
-            <button onClick={handleExportMarkdown} className="btn-secondary py-1.5 px-3 text-xs">
-              <Download className="w-3.5 h-3.5" /> Markdown
-            </button>
-            <button onClick={handleExportCSV} className="btn-secondary py-1.5 px-3 text-xs">
-              <Download className="w-3.5 h-3.5" /> CSV
-            </button>
+          <div className="flex justify-end items-center text-xs text-slate-400">
+            <span>Showing <strong className="text-white">{historyItems.length}</strong> records</span>
           </div>
         </div>
       </div>
@@ -228,35 +262,66 @@ export default function HistoryTab() {
                 ❓ {h.question}
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-white/5 text-xs text-slate-300">
+              <div className="p-4 rounded-xl bg-[#080B16] border border-white/5 text-xs text-slate-300">
                 <MathContent content={h.answer} />
               </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-white/5 text-xs">
-                <button
-                  onClick={() => handleToggleBookmark(h.id)}
-                  className={`btn-secondary py-1 px-2.5 text-xs ${
-                    h.bookmarked ? 'border-amber-500/40 text-amber-400' : ''
-                  }`}
-                >
-                  <Bookmark className="w-3 h-3" /> {h.bookmarked ? 'Bookmarked' : 'Bookmark'}
-                </button>
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/5 text-xs">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleToggleBookmark(h.id)}
+                    className={`btn-secondary py-1 px-2.5 text-xs ${
+                      h.bookmarked ? 'border-amber-500/40 text-amber-400' : ''
+                    }`}
+                  >
+                    <Bookmark className="w-3 h-3" /> {h.bookmarked ? 'Bookmarked' : 'Bookmark'}
+                  </button>
 
-                <button
-                  onClick={() => handleToggleDifficult(h.id)}
-                  className={`btn-secondary py-1 px-2.5 text-xs ${
-                    h.marked_difficult ? 'border-rose-500/40 text-rose-400' : ''
-                  }`}
-                >
-                  <Flag className="w-3 h-3" /> {h.marked_difficult ? 'Flagged' : 'Flag Difficult'}
-                </button>
+                  <button
+                    onClick={() => handleToggleDifficult(h.id)}
+                    className={`btn-secondary py-1 px-2.5 text-xs ${
+                      h.marked_difficult ? 'border-rose-500/40 text-rose-400' : ''
+                    }`}
+                  >
+                    <Flag className="w-3 h-3" /> {h.marked_difficult ? 'Flagged' : 'Flag Difficult'}
+                  </button>
 
-                <button
-                  onClick={() => handleDeleteDoubt(h.id)}
-                  className="btn-secondary py-1 px-2.5 text-xs text-rose-400 hover:text-rose-300 ml-auto"
-                >
-                  <Trash2 className="w-3 h-3" /> Delete
-                </button>
+                  {onContinueInChat && (
+                    <button
+                      onClick={() => onContinueInChat(h.question, h.answer)}
+                      className="btn-secondary py-1 px-2.5 text-xs text-[#22C8E5] hover:text-white flex items-center gap-1"
+                    >
+                      <MessageSquare className="w-3 h-3" /> Continue in AI Tutor
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  {confirmDeleteId === h.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-rose-400">Delete this record?</span>
+                      <button
+                        onClick={() => handleDeleteDoubt(h.id)}
+                        className="py-1 px-2 rounded bg-rose-600 text-white text-[11px] font-bold"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteId(null)}
+                        className="py-1 px-2 rounded bg-white/10 text-slate-300 text-[11px]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteId(h.id)}
+                      className="btn-secondary py-1 px-2.5 text-xs text-slate-500 hover:text-rose-400"
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -265,4 +330,3 @@ export default function HistoryTab() {
     </div>
   );
 }
-

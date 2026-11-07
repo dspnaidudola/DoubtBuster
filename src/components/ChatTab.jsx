@@ -1,37 +1,96 @@
-import React, { useState } from 'react';
-import { Send, Bookmark, Flag, ThumbsUp, Brain, Copy, Check, Sparkles, User, CornerDownLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Send,
+  Bookmark,
+  Flag,
+  ThumbsUp,
+  ThumbsDown,
+  Brain,
+  Copy,
+  Check,
+  Sparkles,
+  User,
+  CornerDownLeft,
+  RotateCcw,
+  Download,
+  Mic,
+  MicOff,
+  Paperclip,
+  X,
+  HelpCircle,
+  Clock,
+  Flame,
+  CheckCircle2,
+  Terminal,
+  Cpu,
+  Calculator,
+  Code2,
+  Atom,
+  ArrowRight,
+  ChevronRight
+} from 'lucide-react';
 import { MathContent } from '../utils/mathRenderer';
 
-const PROMPT_STARTERS = [
+const SUBJECT_EXPLORATION_CARDS = [
   {
-    domain: "💻 Computer Architecture",
-    title: "Intel 8086 Architecture",
-    prompt: "Explain the Intel 8086 microprocessor internal architecture, detailing the difference between the BIU and EU, 6-byte instruction queue, and memory segmentation."
+    id: 'cs',
+    domain: 'Computer Science',
+    title: 'Computer Science',
+    icon: Terminal,
+    color: 'from-sky-500/20 to-blue-600/10 text-sky-400 border-sky-500/30',
+    description: 'Systems programming, Operating systems, Memory segmentation, CPU pipelining, and Networking architectures.',
+    example: 'Explain Intel 8086 microprocessor internal architecture, BIU vs EU, and memory segmentation.',
+    prompt: 'Explain the Intel 8086 microprocessor internal architecture, detailing the difference between the BIU and EU, 6-byte instruction queue, and memory segmentation.'
   },
   {
-    domain: "🤖 AI & Machine Learning",
-    title: "CNN & Backpropagation",
-    prompt: "How does backpropagation compute gradient descent in deep convolutional neural networks with ReLU and MaxPooling?"
+    id: 'aiml',
+    domain: 'AI & Machine Learning',
+    title: 'Artificial Intelligence & ML',
+    icon: Brain,
+    color: 'from-violet-500/20 to-indigo-600/10 text-violet-400 border-violet-500/30',
+    description: 'Deep neural networks, Backpropagation, CNNs, Transformers, Gradient descent, and Loss functions.',
+    example: 'How does backpropagation compute gradient descent in deep convolutional neural networks with ReLU?',
+    prompt: 'How does backpropagation compute gradient descent in deep convolutional neural networks with ReLU and MaxPooling?'
   },
   {
-    domain: "🐍 Algorithms & DS",
-    title: "Recursion & Call Stack",
-    prompt: "How does recursion utilize the system call stack in Python? Write a recursive binary search with base cases and time complexity."
+    id: 'math',
+    domain: 'Mathematics & Calculus',
+    title: 'Mathematics & Calculus',
+    icon: Calculator,
+    color: 'from-emerald-500/20 to-teal-600/10 text-emerald-400 border-emerald-500/30',
+    description: 'Symbolic derivatives, Definite integrals, Linear algebra, Matrix eigenvalues, and Limit theorems.',
+    example: 'Find the symbolic derivative of f(x) = x^3 + 4*x^2 - 10 and calculate its critical points.',
+    prompt: 'Find the symbolic derivative of f(x) = x^3 + 4*x^2 - 10 and calculate its critical points.'
   },
   {
-    domain: "📐 Mathematics & Calculus",
-    title: "Symbolic Calculus Derivation",
-    prompt: "Find the symbolic derivative of f(x) = x^3 + 4*x^2 - 10 and calculate its critical points."
+    id: 'micro',
+    domain: 'Electronics & Microcontrollers',
+    title: 'Electronics & Microprocessors',
+    icon: Cpu,
+    color: 'from-amber-500/20 to-orange-600/10 text-amber-400 border-amber-500/30',
+    description: 'Embedded 8051 timers, Harvard architecture, Logic gates, Semiconductor physics, and Interfacing.',
+    example: 'Explain the Intel 8051 microcontroller architecture, Harvard memory organization, and timer mode 1.',
+    prompt: 'Explain the Intel 8051 microcontroller architecture, Harvard memory organization, and how timer mode 1 functions.'
   },
   {
-    domain: "⚡ Electrical & Microcontrollers",
-    title: "8051 Microcontroller & Timers",
-    prompt: "Explain the Intel 8051 microcontroller architecture, Harvard memory organization, and how timer mode 1 functions."
+    id: 'physics',
+    domain: 'Physics & Engineering',
+    title: 'Physics & Engineering',
+    icon: Atom,
+    color: 'from-rose-500/20 to-pink-600/10 text-rose-400 border-rose-500/30',
+    description: 'Quantum mechanics, Photoelectric effect, Thermodynamics, Electromagnetism, and Mechanics.',
+    example: 'Explain the photoelectric effect, Einstein\'s photon hypothesis, and the work function equation.',
+    prompt: 'Explain the photoelectric effect, Einstein\'s photon hypothesis, and the work function equation with physical significance.'
   },
   {
-    domain: "🔬 Physics & Engineering",
-    title: "Photoelectric Effect & Photons",
-    prompt: "Explain the photoelectric effect, Einstein's photon hypothesis, and the work function equation with physical significance."
+    id: 'dsa',
+    domain: 'Algorithms & DS',
+    title: 'Data Structures & Algorithms',
+    icon: Code2,
+    color: 'from-cyan-500/20 to-teal-600/10 text-cyan-400 border-cyan-500/30',
+    description: 'Recursion, Time & Space Big-O complexity, Binary search trees, Dynamic programming, and Sorting.',
+    example: 'How does recursion utilize the system call stack in Python? Write recursive binary search with complexity.',
+    prompt: 'How does recursion utilize the system call stack in Python? Write a recursive binary search with base cases and time complexity.'
   }
 ];
 
@@ -39,14 +98,39 @@ export default function ChatTab({
   messages,
   setMessages,
   settings,
+  stats,
   onRefreshStats
 }) {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+  const [attachedFile, setAttachedFile] = useState(null);
+
+  const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+  const subjectCardsRef = useRef(null);
+
+  // Auto-scroll on new message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  // Dynamic Learning Hours Calculation based on real metrics
+  const totalDoubts = stats?.total_doubts || 0;
+  const totalQuizzes = stats?.total_quizzes || 0;
+  const totalCoding = stats?.total_coding || 0;
+  const streak = stats?.study_streak || 0;
+  const learningHours = (((totalDoubts * 8) + (totalQuizzes * 12) + (totalCoding * 15)) / 60).toFixed(1);
+  const questionsPracticed = totalDoubts + totalQuizzes;
 
   const handleSendMessage = async (promptToSend) => {
-    const text = promptToSend || inputText;
+    let text = promptToSend || inputText;
+    if (attachedFile && attachedFile.content) {
+      text = `${text}\n\n[Attached File: ${attachedFile.name}]\n${attachedFile.content}`;
+    }
+
     if (!text || !text.trim() || loading) return;
 
     const userMsg = {
@@ -57,6 +141,7 @@ export default function ChatTab({
 
     setMessages((prev) => [...prev, userMsg]);
     setInputText('');
+    setAttachedFile(null);
     setLoading(true);
 
     try {
@@ -70,7 +155,7 @@ export default function ChatTab({
           language: settings.language || 'English',
           attempt: settings.attempt || '',
           api_key: settings.apiKey || '',
-          model: settings.model || 'offline'
+          model: settings.provider || 'offline'
         })
       });
 
@@ -88,7 +173,7 @@ export default function ChatTab({
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         bookmarked: false,
         flaggedDifficult: false,
-        rated: false
+        liked: null
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -98,13 +183,19 @@ export default function ChatTab({
         ...prev,
         {
           role: 'assistant',
-          content: `❌ Could not complete request: ${err.message}. Please verify the backend connection or your API settings.`,
-          field: 'Error System',
+          content: `❌ Could not complete request: ${err.message}. Please verify the backend connection.`,
+          field: 'System Error',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRegenerate = (questionRef) => {
+    if (questionRef) {
+      handleSendMessage(questionRef);
     }
   };
 
@@ -134,19 +225,22 @@ export default function ChatTab({
     }
   };
 
-  const handleRate = async (idx, doubtId) => {
-    if (!doubtId) return;
-    try {
-      await fetch(`/api/history/rate/${doubtId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: 1 })
-      });
-      setMessages((prev) =>
-        prev.map((msg, i) => (i === idx ? { ...msg, rated: true } : msg))
-      );
-    } catch (e) {
-      console.error(e);
+  const handleToggleLike = async (idx, doubtId, isLiked) => {
+    setMessages((prev) =>
+      prev.map((msg, i) =>
+        i === idx ? { ...msg, liked: msg.liked === isLiked ? null : isLiked } : msg
+      )
+    );
+    if (doubtId && isLiked) {
+      try {
+        await fetch(`/api/history/rate/${doubtId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating: 1 })
+        });
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -156,37 +250,228 @@ export default function ChatTab({
     setTimeout(() => setCopiedIdx(null), 2000);
   };
 
+  const handleExportMarkdown = (msg) => {
+    const md = `# DoubtBuster AI Academic Response\nDate: ${new Date().toLocaleString()}\nSubject: ${msg.field}\n\n---\n\n${msg.content}\n\n---\n*Verified by DoubtBuster 2.0 SymPy & AST Core Engine*`;
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `doubtbuster_answer_${Date.now()}.md`;
+    link.click();
+  };
+
+  // Voice Input SpeechRecognition API
+  const handleToggleVoice = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Voice dictation is not supported in this browser. Please try Chrome or Edge.');
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => setIsListening(false);
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      };
+
+      recognition.start();
+    } catch (e) {
+      console.error('Speech recognition error:', e);
+      setIsListening(false);
+    }
+  };
+
+  // File Attachment Handler
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAttachedFile({
+        name: file.name,
+        content: event.target.result.slice(0, 3000) // first 3000 chars for prompt grounding
+      });
+    };
+    reader.readAsText(file);
+  };
+
+  const scrollToSubjects = () => {
+    subjectCardsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="flex flex-col h-[calc(100vh-280px)] min-h-[550px]">
+    <div className="flex flex-col h-[calc(100vh-175px)] min-h-[580px] max-w-7xl mx-auto w-full">
+      {/* Top Chat Bar if messages exist */}
+      {messages.length > 0 && (
+        <div className="flex justify-between items-center py-2 px-1 mb-2 border-b border-white/10 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span className="text-slate-300 font-medium">Active Academic Dialogue</span>
+            <span className="text-slate-500">({messages.length} messages)</span>
+          </div>
+          <button
+            onClick={() => setMessages([])}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-rose-400 transition-colors py-1 px-2.5 rounded-lg hover:bg-white/5"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Clear Conversation</span>
+          </button>
+        </div>
+      )}
+
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto space-y-6 pr-2">
         {messages.length === 0 ? (
-          <div className="py-8">
-            <div className="text-center max-w-2xl mx-auto mb-10">
-              <h2 className="text-3xl font-extrabold text-gradient mb-3">
-                Hello, Scholar 👋
-              </h2>
-              <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-                What would you like to master today? Ask doubts across <strong>Computer Science, Calculus, Microprocessors, AI/ML, Engineering, or Sciences</strong>. Every answer is synthesized dynamically with step-by-step logic, LaTeX math, and verified code.
-              </p>
+          <div className="py-2 space-y-8 animate-slide-up">
+            {/* HERO SECTION */}
+            <div className="hero-gradient p-6 sm:p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-[#7867FF]/15 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16"></div>
+              <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-[#22C8E5]/10 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div className="relative z-10 max-w-3xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-[#22C8E5] mb-4 backdrop-blur-md">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  AI Engine Online • SymPy & AST Verified
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3 leading-tight">
+                  Learn Smarter. Solve Faster.{' '}
+                  <span className="text-gradient">Master Everything.</span>
+                </h2>
+
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl">
+                  Your personal AI academic companion for understanding concepts, solving complex problems and improving your knowledge with high mathematical precision.
+                </p>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => textareaRef.current?.focus()}
+                    className="btn-primary"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Ask AI Tutor</span>
+                  </button>
+                  <button
+                    onClick={scrollToSubjects}
+                    className="btn-secondary"
+                  >
+                    <span>Explore Subjects</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-              {PROMPT_STARTERS.map((ps, i) => (
-                <div
-                  key={i}
-                  onClick={() => handleSendMessage(ps.prompt)}
-                  className="glass-card p-4 cursor-pointer hover:border-indigo-500/50 hover:bg-white/5 transition-all group"
-                >
-                  <div className="text-xs font-semibold text-sky-400 mb-1">{ps.domain}</div>
-                  <div className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors mb-2">
-                    {ps.title}
-                  </div>
-                  <div className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                    {ps.prompt}
-                  </div>
+            {/* DYNAMIC STATISTICS CARDS */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="stat-card">
+                <div className="stat-label flex items-center justify-between">
+                  <span>Total Doubts Solved</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#22C8E5]" />
                 </div>
-              ))}
+                <div className="stat-value text-white">{totalDoubts}</div>
+                <div className="text-[11px] text-[#A1AEC4] font-medium">Logged & persistent</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-label flex items-center justify-between">
+                  <span>Questions Asked</span>
+                  <HelpCircle className="w-4 h-4 text-[#7867FF]" />
+                </div>
+                <div className="stat-value text-white">{questionsPracticed}</div>
+                <div className="text-[11px] text-[#A1AEC4] font-medium">Doubts & practice questions</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-label flex items-center justify-between">
+                  <span>Learning Hours</span>
+                  <Clock className="w-4 h-4 text-[#22C8E5]" />
+                </div>
+                <div className="stat-value text-white">{learningHours} <span className="text-sm font-normal text-slate-400">hrs</span></div>
+                <div className="text-[11px] text-emerald-400 font-semibold">Active conceptual mastery</div>
+              </div>
+
+              <div className="stat-card">
+                <div className="stat-label flex items-center justify-between">
+                  <span>Current Study Streak</span>
+                  <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
+                </div>
+                <div className="stat-value text-amber-400 flex items-center gap-1">
+                  {streak} <span className="text-sm font-normal text-slate-400">days</span>
+                </div>
+                <div className="text-[11px] text-[#A1AEC4] font-medium">Consecutive learning activity</div>
+              </div>
+            </div>
+
+            {/* SUBJECT EXPLORATION SECTION */}
+            <div ref={subjectCardsRef} className="pt-2 space-y-4">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-[#7867FF]" />
+                    Explore Academic Disciplines
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Select any foundational engineering or scientific domain to examine concepts or ask targeted doubts.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {SUBJECT_EXPLORATION_CARDS.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <div
+                      key={card.id}
+                      className="glass-card p-5 flex flex-col justify-between hover:border-[#7867FF]/50 hover:bg-[#1B2438]/60 transition-all group cursor-pointer"
+                      onClick={() => handleSendMessage(card.prompt)}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${card.color} border`}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <span className="text-[11px] font-semibold text-slate-400 group-hover:text-white flex items-center gap-1 transition-colors">
+                            Explore <ChevronRight className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
+
+                        <h4 className="text-base font-bold text-white group-hover:text-[#22C8E5] transition-colors mb-1.5">
+                          {card.title}
+                        </h4>
+
+                        <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-4">
+                          {card.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-3 border-t border-white/5">
+                        <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">
+                          Example Concept Query
+                        </div>
+                        <div className="text-xs text-slate-300 italic line-clamp-2">
+                          "{card.example}"
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ) : (
@@ -198,94 +483,158 @@ export default function ChatTab({
               }`}
             >
               {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0 mt-1">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7867FF]/25 to-[#22C8E5]/25 border border-[#7867FF]/40 flex items-center justify-center text-[#7867FF] shrink-0 mt-1 shadow-md">
                   <Sparkles className="w-4 h-4" />
                 </div>
               )}
 
               <div
-                className={`max-w-3xl rounded-2xl p-5 ${
+                className={`max-w-3xl rounded-2xl p-5 shadow-lg ${
                   msg.role === 'user'
-                    ? 'bg-indigo-600/25 border border-indigo-500/35 text-white'
-                    : 'glass-card text-slate-200'
+                    ? 'bg-[#1B2438] border border-[#7867FF]/30 text-white ml-10'
+                    : 'glass-card text-slate-200 mr-10'
                 }`}
               >
-                {msg.role === 'assistant' && msg.field && (
-                  <div className="mb-3">
-                    <span className="domain-badge">🏷️ {msg.field}</span>
+                {/* Header of message */}
+                <div className="flex items-center justify-between gap-3 mb-2.5 pb-2 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    {msg.role === 'assistant' ? (
+                      <>
+                        <span className="text-xs font-bold text-white">DoubtBuster AI</span>
+                        {msg.field && (
+                          <span className="domain-badge text-[10px] py-0.5 px-2">
+                            {msg.field}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-[#22C8E5]" /> Scholar Query
+                      </span>
+                    )}
                   </div>
-                )}
+                  <span className="text-[10px] text-slate-400 font-mono">{msg.timestamp}</span>
+                </div>
 
+                {/* Formatted Content */}
                 <MathContent content={msg.content} />
 
-                {/* Assistant Action Bar */}
+                {/* Action Bar for Assistant Answers */}
                 {msg.role === 'assistant' && (
-                  <div className="flex flex-wrap items-center gap-2 pt-4 mt-4 border-t border-white/10 text-xs">
-                    <button
-                      onClick={() => handleBookmark(idx, msg.doubtId)}
-                      className={`btn-secondary py-1 px-2.5 text-xs ${
-                        msg.bookmarked ? 'border-amber-500/50 text-amber-400' : ''
-                      }`}
-                    >
-                      <Bookmark className="w-3.5 h-3.5" />
-                      {msg.bookmarked ? 'Bookmarked' : 'Bookmark'}
-                    </button>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-4 border-t border-white/10 text-xs">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {/* Bookmark */}
+                      <button
+                        onClick={() => handleBookmark(idx, msg.doubtId)}
+                        className={`p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-1 text-[11px] ${
+                          msg.bookmarked ? 'border-amber-500/50 text-amber-400' : 'text-slate-300'
+                        }`}
+                        title="Bookmark to Study Notes"
+                      >
+                        <Bookmark className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{msg.bookmarked ? 'Saved' : 'Bookmark'}</span>
+                      </button>
 
-                    <button
-                      onClick={() => handleFlagDifficult(idx, msg.doubtId)}
-                      className={`btn-secondary py-1 px-2.5 text-xs ${
-                        msg.flaggedDifficult ? 'border-rose-500/50 text-rose-400' : ''
-                      }`}
-                    >
-                      <Flag className="w-3.5 h-3.5" />
-                      {msg.flaggedDifficult ? 'Flagged Difficult' : 'Flag Difficult'}
-                    </button>
+                      {/* Flag Difficult */}
+                      <button
+                        onClick={() => handleFlagDifficult(idx, msg.doubtId)}
+                        className={`p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-1 text-[11px] ${
+                          msg.flaggedDifficult ? 'border-rose-500/50 text-rose-400' : 'text-slate-300'
+                        }`}
+                        title="Flag as Challenging Concept"
+                      >
+                        <Flag className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{msg.flaggedDifficult ? 'Difficult' : 'Flag'}</span>
+                      </button>
 
-                    <button
-                      onClick={() => handleRate(idx, msg.doubtId)}
-                      disabled={msg.rated}
-                      className={`btn-secondary py-1 px-2.5 text-xs ${
-                        msg.rated ? 'text-emerald-400' : ''
-                      }`}
-                    >
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                      {msg.rated ? 'Rated Helpful' : 'Helpful'}
-                    </button>
+                      {/* Regenerate */}
+                      <button
+                        onClick={() => handleRegenerate(msg.questionRef)}
+                        className="p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-1 text-[11px] text-slate-300 hover:text-white"
+                        title="Regenerate Solution"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-[#22C8E5]" />
+                        <span className="hidden sm:inline">Regenerate</span>
+                      </button>
 
-                    <button
-                      onClick={() =>
-                        handleSendMessage(
-                          `Generate a similar practice problem with worked answer key based on this concept: ${
-                            msg.questionRef ? msg.questionRef.slice(0, 100) : ''
-                          }`
-                        )
-                      }
-                      className="btn-secondary py-1 px-2.5 text-xs"
-                    >
-                      <Brain className="w-3.5 h-3.5 text-indigo-400" />
-                      Practice Challenge
-                    </button>
+                      {/* Practice Challenge */}
+                      <button
+                        onClick={() =>
+                          handleSendMessage(
+                            `Generate an interactive practice challenge with worked step-by-step solution based on this concept: ${
+                              msg.questionRef ? msg.questionRef.slice(0, 100) : ''
+                            }`
+                          )
+                        }
+                        className="p-1.5 px-2 rounded-lg bg-[#7867FF]/10 border border-[#7867FF]/25 hover:bg-[#7867FF]/20 text-[#7867FF] transition-colors flex items-center gap-1 text-[11px] font-semibold"
+                        title="Practice Similar Problem"
+                      >
+                        <Brain className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Practice Problem</span>
+                      </button>
+                    </div>
 
-                    <button
-                      onClick={() => handleCopy(msg.content, idx)}
-                      className="btn-secondary py-1 px-2.5 text-xs ml-auto"
-                    >
-                      {copiedIdx === idx ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" /> Copy
-                        </>
-                      )}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      {/* Thumbs Up */}
+                      <button
+                        onClick={() => handleToggleLike(idx, msg.doubtId, true)}
+                        className={`p-1.5 rounded-lg border transition-colors ${
+                          msg.liked === true
+                            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                        }`}
+                        title="Helpful Answer"
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Thumbs Down */}
+                      <button
+                        onClick={() => handleToggleLike(idx, msg.doubtId, false)}
+                        className={`p-1.5 rounded-lg border transition-colors ${
+                          msg.liked === false
+                            ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
+                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                        }`}
+                        title="Needs Improvement"
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Export Markdown */}
+                      <button
+                        onClick={() => handleExportMarkdown(msg)}
+                        className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors"
+                        title="Export Markdown (.md)"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Copy Answer */}
+                      <button
+                        onClick={() => handleCopy(msg.content, idx)}
+                        className="p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1 text-[11px]"
+                        title="Copy Answer"
+                      >
+                        {copiedIdx === idx ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-emerald-400">Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
 
               {msg.role === 'user' && (
-                <div className="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0 mt-1">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#22C8E5]/30 to-[#7867FF]/30 border border-[#22C8E5]/40 flex items-center justify-center text-[#22C8E5] shrink-0 mt-1 shadow-md">
                   <User className="w-4 h-4" />
                 </div>
               )}
@@ -293,50 +642,136 @@ export default function ChatTab({
           ))
         )}
 
+        {/* Loading / Typing Skeleton Indicator */}
         {loading && (
-          <div className="flex gap-4 items-start">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shrink-0">
+          <div className="flex gap-3 md:gap-4 items-start animate-pulse">
+            <div className="w-9 h-9 rounded-xl bg-[#7867FF]/20 border border-[#7867FF]/40 flex items-center justify-center text-[#7867FF] shrink-0 mt-1">
               <Sparkles className="w-4 h-4 animate-spin" />
             </div>
-            <div className="glass-card p-4 text-sm text-slate-400 flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></div>
-              <span>Analyzing question & dynamically synthesizing domain explanation...</span>
+            <div className="glass-card p-5 max-w-xl text-xs text-slate-300 space-y-2.5">
+              <div className="flex items-center gap-2 text-[#22C8E5] font-semibold">
+                <span className="w-2 h-2 rounded-full bg-[#22C8E5] animate-ping"></span>
+                <span>Synthesizing multi-domain academic derivation...</span>
+              </div>
+              <div className="h-2.5 bg-white/10 rounded-full w-3/4"></div>
+              <div className="h-2.5 bg-white/5 rounded-full w-5/6"></div>
+              <div className="h-2.5 bg-white/10 rounded-full w-2/3"></div>
             </div>
           </div>
         )}
+
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Floating Bottom Prompt Bar */}
-      <div className="pt-4 border-t border-white/10 mt-4">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSendMessage();
-          }}
-          className="relative flex items-center"
-        >
-          <input
-            type="text"
+      {/* FLOATING BOTTOM PROMPT COMPOSER */}
+      <div className="pt-3 border-t border-white/10 mt-3 relative z-20">
+        {/* Attached File Preview Bar */}
+        {attachedFile && (
+          <div className="mb-2 px-3 py-1.5 rounded-lg bg-[#1B2438] border border-[#22C8E5]/30 flex items-center justify-between text-xs text-slate-200">
+            <div className="flex items-center gap-2 truncate">
+              <Paperclip className="w-3.5 h-3.5 text-[#22C8E5]" />
+              <span className="font-semibold text-white truncate">{attachedFile.name}</span>
+              <span className="text-slate-400 text-[11px]">(Attached for grounded reasoning)</span>
+            </div>
+            <button
+              onClick={() => setAttachedFile(null)}
+              className="text-slate-400 hover:text-rose-400 ml-2"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Prompt Composer Box */}
+        <div className="relative rounded-2xl bg-[#0D1222] border border-white/15 focus-within:border-[#7867FF] focus-within:ring-1 focus-within:ring-[#7867FF] transition-all shadow-xl">
+          <textarea
+            ref={textareaRef}
+            rows={2}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Ask DoubtBuster anything across any domain (e.g. solve equation, write code, explain 8086 queue)..."
-            className="w-full pr-24 pl-4 py-3.5 bg-slate-900/80 border border-white/15 rounded-xl text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-lg text-sm"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            placeholder="Ask DoubtBuster anything across any domain (e.g. solve calculus integral, explain 8086 queue, write recursive search)..."
+            className="w-full bg-transparent border-0 resize-none text-white placeholder-slate-500 text-sm px-4 pt-3 pb-2 focus:ring-0 outline-none"
           />
-          <button
-            type="submit"
-            disabled={!inputText.trim() || loading}
-            className="absolute right-2 btn-primary py-2 px-4 text-xs font-semibold"
-          >
-            <span>Ask Tutor</span>
-            <CornerDownLeft className="w-3.5 h-3.5" />
-          </button>
-        </form>
-        <div className="flex justify-between items-center text-[11px] text-slate-500 px-1 pt-1.5">
-          <span>Mode: <strong className="text-slate-400">{settings.mode || 'Step-by-step'}</strong> • Adaptive Level: <strong className="text-slate-400">{settings.level || 'Intermediate'}</strong></span>
-          <span>Zero static answers • SymPy verified</span>
+
+          {/* Action Row Inside Composer */}
+          <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
+            <div className="flex items-center gap-1.5">
+              {/* File Attachment Hidden Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.py,.md,.pdf,.json"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                title="Attach Document / Code File"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+
+              {/* Voice Dictation Button */}
+              <button
+                type="button"
+                onClick={handleToggleVoice}
+                className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs ${
+                  isListening
+                    ? 'bg-rose-500/20 text-rose-400 animate-pulse border border-rose-500/40'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+                title={isListening ? 'Listening... click to stop' : 'Voice Input'}
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {isListening && <span className="text-[10px]">Listening...</span>}
+              </button>
+
+              {/* Clear Input */}
+              {inputText.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setInputText('')}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-colors"
+                  title="Clear Input"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Send Button */}
+            <button
+              onClick={() => handleSendMessage()}
+              disabled={(!inputText.trim() && !attachedFile) || loading}
+              className="btn-primary py-1.5 px-3.5 text-xs font-semibold"
+            >
+              <span>Ask Tutor</span>
+              <CornerDownLeft className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Footer Info / Mode Indicator */}
+        <div className="flex flex-wrap justify-between items-center text-[11px] text-slate-400 px-2 pt-1.5">
+          <div className="flex items-center gap-2">
+            <span>Pedagogical Mode: <strong className="text-white">{settings.mode || 'Step-by-step'}</strong></span>
+            <span>•</span>
+            <span>Calibrated Level: <strong className="text-[#22C8E5]">{settings.level || 'Intermediate'}</strong></span>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 text-slate-500">
+            <span>Press <kbd className="px-1 py-0.5 rounded bg-white/5 text-slate-300 font-mono text-[10px]">Enter</kbd> to send, <kbd className="px-1 py-0.5 rounded bg-white/5 text-slate-300 font-mono text-[10px]">Shift+Enter</kbd> for newline</span>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

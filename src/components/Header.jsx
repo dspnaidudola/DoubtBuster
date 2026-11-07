@@ -1,66 +1,163 @@
-import React from 'react';
-import { Sparkles, Flame, CheckCircle2, ShieldCheck, Terminal, Cpu } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Sparkles,
+  Flame,
+  Bell,
+  ShieldCheck,
+  CheckCircle2,
+  Cpu,
+  GraduationCap,
+  X,
+  BookOpen,
+  Award
+} from 'lucide-react';
 
-export default function Header({ stats, adaptiveLevel }) {
+export default function Header({
+  stats,
+  adaptiveLevel,
+  activeTab,
+  setActiveTab
+}) {
+  const [showNotifications, setShowNotifications] = useState(false);
   const streak = stats?.study_streak || 0;
   const doubtsCount = stats?.total_doubts || 0;
 
+  const notifications = [
+    {
+      id: 1,
+      title: 'Daily Study Streak Active',
+      desc: `You have an active ${streak}-day learning streak. Keep practicing!`,
+      time: 'Just now',
+      icon: Flame,
+      color: 'text-amber-400'
+    },
+    {
+      id: 2,
+      title: 'SymPy Math Engine v2.0 Ready',
+      desc: 'Deterministic calculus and matrix verification active with zero hallucinations.',
+      time: '5m ago',
+      icon: Cpu,
+      color: 'text-[#22C8E5]'
+    },
+    {
+      id: 3,
+      title: 'Adaptive Difficulty Configured',
+      desc: `Your current academic level is calibrated to ${adaptiveLevel}.`,
+      time: 'Today',
+      icon: Award,
+      color: 'text-[#7867FF]'
+    }
+  ];
+
   return (
-    <div className="hero-gradient p-6 md:p-8 mb-6 relative overflow-hidden">
-      {/* Background soft glow accent */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="p-2 bg-indigo-500/15 border border-indigo-500/30 rounded-xl text-indigo-400">
-              <Sparkles className="w-6 h-6 animate-pulse" />
-            </span>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gradient">
-              DoubtBuster
-            </h1>
+    <header className="bg-[#0D1222]/90 backdrop-blur-md border-b border-white/10 px-6 py-3.5 sticky top-0 z-40 transition-all">
+      <div className="flex items-center justify-between gap-4">
+        {/* Left: Branding & Tagline */}
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-[#7867FF]/20 to-[#22C8E5]/20 border border-[#7867FF]/35 text-[#7867FF]">
+            <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
-          
-          <p className="text-slate-400 text-sm md:text-base max-w-2xl font-normal leading-relaxed">
-            Universal AI Academic Tutor — On-the-fly multi-domain reasoning, SymPy mathematical verification, and isolated sandbox execution.
-          </p>
-
-          <div className="flex flex-wrap gap-2 mt-4">
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 flex items-center gap-1.5 backdrop-blur-md">
-              <CheckCircle2 className="w-3.5 h-3.5 text-sky-400" />
-              Dynamic Synthesis (Zero Hallucinations)
-            </span>
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 flex items-center gap-1.5 backdrop-blur-md">
-              <Cpu className="w-3.5 h-3.5 text-violet-400" />
-              SymPy Math Engine
-            </span>
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 flex items-center gap-1.5 backdrop-blur-md">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Secure Subprocess Sandbox
-            </span>
-            {adaptiveLevel && (
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/15 border border-sky-500/30 text-sky-300 flex items-center gap-1.5 backdrop-blur-md">
-                🎯 Level: {adaptiveLevel}
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-extrabold tracking-tight text-gradient">
+                DoubtBuster
+              </h1>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#7867FF]/15 border border-[#7867FF]/30 text-[#7867FF]">
+                v2.0
               </span>
-            )}
+            </div>
+            <div className="text-[11px] text-[#A1AEC4] hidden sm:block">
+              Universal AI Academic Companion
+            </div>
           </div>
         </div>
 
-        {/* Study Streak & Activity Pill */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center min-w-[150px] backdrop-blur-lg shadow-inner">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Study Streak
+        {/* Center: Quick Welcome */}
+        <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
+          <GraduationCap className="w-4 h-4 text-[#22C8E5]" />
+          <span>Welcome back, <strong className="text-white">Scholar</strong></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse ml-1"></span>
+        </div>
+
+        {/* Right: Actions, Streak, Notifications & Profile */}
+        <div className="flex items-center gap-3">
+          {/* Study Streak Pill */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-semibold">
+            <Flame className="w-4 h-4 fill-amber-400" />
+            <span>{streak} <span className="hidden sm:inline font-normal text-slate-400">days streak</span></span>
           </div>
-          <div className="text-3xl font-extrabold text-sky-400 flex items-center justify-center gap-1.5 my-1">
-            <Flame className="w-6 h-6 text-amber-400 fill-amber-400" />
-            {streak} <span className="text-xs font-medium text-slate-400">days</span>
+
+          {/* Notifications Toggle */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="p-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-colors relative"
+              title="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#22C8E5]"></span>
+            </button>
+
+            {/* Notification Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 glass-card p-4 shadow-2xl z-50 border border-white/15 animate-slide-up">
+                <div className="flex justify-between items-center pb-3 border-b border-white/10 mb-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider">
+                    <Bell className="w-3.5 h-3.5 text-[#22C8E5]" />
+                    <span>Academic Notifications</span>
+                  </div>
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="text-slate-400 hover:text-white text-xs"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {notifications.map((n) => {
+                    const Icon = n.icon;
+                    return (
+                      <div
+                        key={n.id}
+                        className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors flex gap-3 items-start"
+                      >
+                        <div className={`p-1.5 rounded-lg bg-black/30 ${n.color} shrink-0`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs font-semibold text-white flex justify-between">
+                            <span>{n.title}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">{n.time}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+                            {n.desc}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-          <div className="text-[11px] text-slate-500">
-            {doubtsCount} doubts resolved
+
+          {/* User Profile Pill */}
+          <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#7867FF] to-[#22C8E5] p-[1px] shadow-sm">
+              <div className="w-full h-full rounded-[11px] bg-[#0D1222] flex items-center justify-center text-xs font-bold text-white">
+                SC
+              </div>
+            </div>
+            <div className="hidden lg:block text-left">
+              <div className="text-xs font-bold text-white leading-tight">Scholar</div>
+              <div className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> GMRIT • Level: {adaptiveLevel}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
-

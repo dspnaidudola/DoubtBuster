@@ -121,6 +121,13 @@ class NoteCreateRequest(BaseModel):
     topic: str
     content: str
 
+class RagAskRequest(BaseModel):
+    query: str
+    document_text: str
+    doc_name: Optional[str] = "Uploaded Document"
+    api_key: Optional[str] = ""
+    model: Optional[str] = "offline"
+
 class RateRequest(BaseModel):
     rating: int
 
@@ -316,6 +323,26 @@ def note_delete_endpoint(note_id: int):
 @app.get("/api/study/materials")
 def study_materials_endpoint():
     return {"materials": CURATED_STUDY_MATERIALS}
+
+@app.post("/api/rag/ask")
+def rag_ask_endpoint(req: RagAskRequest):
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty.")
+    if not req.document_text.strip():
+        raise HTTPException(status_code=400, detail="Document text cannot be empty.")
+    
+    raw_sections = [{
+        "doc_name": req.doc_name or "Uploaded Document",
+        "section": "Uploaded Material",
+        "text": req.document_text
+    }]
+    chunks = chunk_sections(raw_sections, chunk_size=350, overlap=50)
+    retrieved = retrieve_grounded_chunks(req.query, chunks, top_k=3)
+    answer = answer_with_rag(req.query, retrieved, api_key=req.api_key, model=req.model or "offline")
+    return {
+        "answer": answer,
+        "retrieved_chunks": retrieved
+    }
 
 @app.get("/api/stats")
 def stats_endpoint():
