@@ -340,3 +340,4 @@ def render_quick_nav(active: str = "Home"):
             if st.button(item["name"], key=f"nav_btn_{item['key']}", type=btn_type, use_container_width=True):
                 if not is_active:
                     st.switch_page(item["page"])
+

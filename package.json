@@ -1,0 +1,25 @@
+{
+  "name": "doubtbuster",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -p \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"cyan.bold,magenta.bold\" \"python server.py\" \"vite --port 3000\"",
+    "dev:ui": "vite --port 3000",
+    "dev:backend": "python server.py",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "katex": "^0.19.1",
+    "lucide-react": "^1.70.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.4",
+    "concurrently": "^9.2.1",
+    "vite": "^7.3.1"
+  }
+}

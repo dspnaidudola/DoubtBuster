@@ -193,11 +193,29 @@ copy .env.example .env
 ---
 
 ## 9. Run the Application
-Start the Streamlit application from the project root:
+
+### ⚡ Recommended: Cutting-Edge Full-Stack App (React + Vite + FastAPI)
+Launch the modern full-stack web application with a single command:
+```powershell
+npm run dev
+```
+This automatically starts:
+- **FastAPI REST API Server:** `http://127.0.0.1:8000`
+- **Modern Vite React Frontend:** `http://localhost:3000` (auto-proxies `/api` requests)
+
+### 🐍 Standalone FastAPI Server
+To serve the complete built application directly from Python:
+```powershell
+python server.py
+```
+Open **`http://127.0.0.1:8000`** in your browser.
+
+### 📊 Alternative Streamlit Mode (Optional)
+If you prefer the Streamlit interface:
 ```powershell
 streamlit run app.py
 ```
-The application will launch automatically at: **`http://localhost:8501`**.
+The Streamlit interface runs at: **`http://localhost:8501`**.
 
 ---
 
