@@ -42,3 +42,4 @@ export function MathContent({ content, className = '' }) {
     />
   );
 }
+

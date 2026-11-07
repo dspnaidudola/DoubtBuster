@@ -192,3 +192,4 @@ export default function ProgressTab({ stats, onRefreshStats }) {
     </div>
   );
 }
+

@@ -11,6 +11,15 @@ Exposes high-performance, asynchronous REST APIs for:
 
 import os
 import sys
+
+# Ensure UTF-8 output encoding across platforms (prevents Windows cp1252 charmap errors)
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
@@ -340,5 +349,5 @@ if os.path.exists(dist_path):
 # Server Entrypoint
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    print("🚀 Starting DoubtBuster FastAPI Backend on http://127.0.0.1:8000")
+    print("[SERVER] Starting DoubtBuster FastAPI Backend on http://127.0.0.1:8000")
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=False)

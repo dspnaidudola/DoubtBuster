@@ -63,3 +63,4 @@ export default function Header({ stats, adaptiveLevel }) {
     </div>
   );
 }
+
