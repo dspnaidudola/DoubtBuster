@@ -27,7 +27,8 @@ import {
   Code2,
   Atom,
   ArrowRight,
-  ChevronRight
+  ChevronRight,
+  Sliders
 } from 'lucide-react';
 import { MathContent } from '../utils/mathRenderer';
 
@@ -99,7 +100,8 @@ export default function ChatTab({
   setMessages,
   settings,
   stats,
-  onRefreshStats
+  onRefreshStats,
+  onOpenSettings
 }) {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -114,7 +116,9 @@ export default function ChatTab({
 
   // Auto-scroll on new message
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, loading]);
 
   // Dynamic Learning Hours Calculation based on real metrics
@@ -304,7 +308,7 @@ export default function ChatTab({
     reader.onload = (event) => {
       setAttachedFile({
         name: file.name,
-        content: event.target.result.slice(0, 3000) // first 3000 chars for prompt grounding
+        content: event.target.result.slice(0, 3000)
       });
     };
     reader.readAsText(file);
@@ -315,167 +319,27 @@ export default function ChatTab({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-175px)] min-h-[580px] max-w-7xl mx-auto w-full">
-      {/* Top Chat Bar if messages exist */}
-      {messages.length > 0 && (
-        <div className="flex justify-between items-center py-2 px-1 mb-2 border-b border-white/10 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="text-slate-300 font-medium">Active Academic Dialogue</span>
-            <span className="text-slate-500">({messages.length} messages)</span>
+    <div className="flex flex-col min-h-[calc(100vh-140px)] max-w-7xl mx-auto w-full">
+      {/* Messages Feed View */}
+      {messages.length > 0 ? (
+        <div className="flex-1 space-y-6 pb-28">
+          {/* Top Bar for active dialogue */}
+          <div className="flex justify-between items-center py-2.5 px-3 rounded-xl bg-white/5 border border-white/5 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span className="text-slate-300 font-medium">Academic Dialogue Active</span>
+              <span className="text-slate-500">({messages.length} messages)</span>
+            </div>
+            <button
+              onClick={() => setMessages([])}
+              className="flex items-center gap-1.5 text-slate-400 hover:text-rose-400 transition-colors py-1 px-2.5 rounded-lg hover:bg-white/5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Clear Dialogue</span>
+            </button>
           </div>
-          <button
-            onClick={() => setMessages([])}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-rose-400 transition-colors py-1 px-2.5 rounded-lg hover:bg-white/5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Clear Conversation</span>
-          </button>
-        </div>
-      )}
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-        {messages.length === 0 ? (
-          <div className="py-2 space-y-8 animate-slide-up">
-            {/* HERO SECTION */}
-            <div className="hero-gradient p-6 sm:p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-80 h-80 bg-[#7867FF]/15 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16"></div>
-              <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-[#22C8E5]/10 rounded-full blur-2xl pointer-events-none"></div>
-
-              <div className="relative z-10 max-w-3xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-[#22C8E5] mb-4 backdrop-blur-md">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  AI Engine Online • SymPy & AST Verified
-                </div>
-
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3 leading-tight">
-                  Learn Smarter. Solve Faster.{' '}
-                  <span className="text-gradient">Master Everything.</span>
-                </h2>
-
-                <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl">
-                  Your personal AI academic companion for understanding concepts, solving complex problems and improving your knowledge with high mathematical precision.
-                </p>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={() => textareaRef.current?.focus()}
-                    className="btn-primary"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Ask AI Tutor</span>
-                  </button>
-                  <button
-                    onClick={scrollToSubjects}
-                    className="btn-secondary"
-                  >
-                    <span>Explore Subjects</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* DYNAMIC STATISTICS CARDS */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="stat-card">
-                <div className="stat-label flex items-center justify-between">
-                  <span>Total Doubts Solved</span>
-                  <CheckCircle2 className="w-4 h-4 text-[#22C8E5]" />
-                </div>
-                <div className="stat-value text-white">{totalDoubts}</div>
-                <div className="text-[11px] text-[#A1AEC4] font-medium">Logged & persistent</div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-label flex items-center justify-between">
-                  <span>Questions Asked</span>
-                  <HelpCircle className="w-4 h-4 text-[#7867FF]" />
-                </div>
-                <div className="stat-value text-white">{questionsPracticed}</div>
-                <div className="text-[11px] text-[#A1AEC4] font-medium">Doubts & practice questions</div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-label flex items-center justify-between">
-                  <span>Learning Hours</span>
-                  <Clock className="w-4 h-4 text-[#22C8E5]" />
-                </div>
-                <div className="stat-value text-white">{learningHours} <span className="text-sm font-normal text-slate-400">hrs</span></div>
-                <div className="text-[11px] text-emerald-400 font-semibold">Active conceptual mastery</div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-label flex items-center justify-between">
-                  <span>Current Study Streak</span>
-                  <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
-                </div>
-                <div className="stat-value text-amber-400 flex items-center gap-1">
-                  {streak} <span className="text-sm font-normal text-slate-400">days</span>
-                </div>
-                <div className="text-[11px] text-[#A1AEC4] font-medium">Consecutive learning activity</div>
-              </div>
-            </div>
-
-            {/* SUBJECT EXPLORATION SECTION */}
-            <div ref={subjectCardsRef} className="pt-2 space-y-4">
-              <div className="flex justify-between items-end">
-                <div>
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-[#7867FF]" />
-                    Explore Academic Disciplines
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Select any foundational engineering or scientific domain to examine concepts or ask targeted doubts.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {SUBJECT_EXPLORATION_CARDS.map((card) => {
-                  const Icon = card.icon;
-                  return (
-                    <div
-                      key={card.id}
-                      className="glass-card p-5 flex flex-col justify-between hover:border-[#7867FF]/50 hover:bg-[#1B2438]/60 transition-all group cursor-pointer"
-                      onClick={() => handleSendMessage(card.prompt)}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${card.color} border`}>
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <span className="text-[11px] font-semibold text-slate-400 group-hover:text-white flex items-center gap-1 transition-colors">
-                            Explore <ChevronRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-
-                        <h4 className="text-base font-bold text-white group-hover:text-[#22C8E5] transition-colors mb-1.5">
-                          {card.title}
-                        </h4>
-
-                        <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-4">
-                          {card.description}
-                        </p>
-                      </div>
-
-                      <div className="pt-3 border-t border-white/5">
-                        <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">
-                          Example Concept Query
-                        </div>
-                        <div className="text-xs text-slate-300 italic line-clamp-2">
-                          "{card.example}"
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        ) : (
-          messages.map((msg, idx) => (
+          {messages.map((msg, idx) => (
             <div
               key={idx}
               className={`flex gap-3 md:gap-4 ${
@@ -489,10 +353,10 @@ export default function ChatTab({
               )}
 
               <div
-                className={`max-w-3xl rounded-2xl p-5 shadow-lg ${
+                className={`max-w-3xl rounded-2xl p-5 sm:p-6 shadow-xl ${
                   msg.role === 'user'
-                    ? 'bg-[#1B2438] border border-[#7867FF]/30 text-white ml-10'
-                    : 'glass-card text-slate-200 mr-10'
+                    ? 'bg-[#161E36] border border-[#7867FF]/35 text-white ml-8'
+                    : 'glass-card text-slate-200 mr-8'
                 }`}
               >
                 {/* Header of message */}
@@ -523,7 +387,6 @@ export default function ChatTab({
                 {msg.role === 'assistant' && (
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-4 border-t border-white/10 text-xs">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      {/* Bookmark */}
                       <button
                         onClick={() => handleBookmark(idx, msg.doubtId)}
                         className={`p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-1 text-[11px] ${
@@ -535,7 +398,6 @@ export default function ChatTab({
                         <span className="hidden sm:inline">{msg.bookmarked ? 'Saved' : 'Bookmark'}</span>
                       </button>
 
-                      {/* Flag Difficult */}
                       <button
                         onClick={() => handleFlagDifficult(idx, msg.doubtId)}
                         className={`p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-1 text-[11px] ${
@@ -547,7 +409,6 @@ export default function ChatTab({
                         <span className="hidden sm:inline">{msg.flaggedDifficult ? 'Difficult' : 'Flag'}</span>
                       </button>
 
-                      {/* Regenerate */}
                       <button
                         onClick={() => handleRegenerate(msg.questionRef)}
                         className="p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-1 text-[11px] text-slate-300 hover:text-white"
@@ -557,7 +418,6 @@ export default function ChatTab({
                         <span className="hidden sm:inline">Regenerate</span>
                       </button>
 
-                      {/* Practice Challenge */}
                       <button
                         onClick={() =>
                           handleSendMessage(
@@ -575,7 +435,6 @@ export default function ChatTab({
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      {/* Thumbs Up */}
                       <button
                         onClick={() => handleToggleLike(idx, msg.doubtId, true)}
                         className={`p-1.5 rounded-lg border transition-colors ${
@@ -588,7 +447,6 @@ export default function ChatTab({
                         <ThumbsUp className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Thumbs Down */}
                       <button
                         onClick={() => handleToggleLike(idx, msg.doubtId, false)}
                         className={`p-1.5 rounded-lg border transition-colors ${
@@ -601,7 +459,6 @@ export default function ChatTab({
                         <ThumbsDown className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Export Markdown */}
                       <button
                         onClick={() => handleExportMarkdown(msg)}
                         className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-colors"
@@ -610,7 +467,6 @@ export default function ChatTab({
                         <Download className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Copy Answer */}
                       <button
                         onClick={() => handleCopy(msg.content, idx)}
                         className="p-1.5 px-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1 text-[11px]"
@@ -639,136 +495,280 @@ export default function ChatTab({
                 </div>
               )}
             </div>
-          ))
-        )}
+          ))}
 
-        {/* Loading / Typing Skeleton Indicator */}
-        {loading && (
-          <div className="flex gap-3 md:gap-4 items-start animate-pulse">
-            <div className="w-9 h-9 rounded-xl bg-[#7867FF]/20 border border-[#7867FF]/40 flex items-center justify-center text-[#7867FF] shrink-0 mt-1">
-              <Sparkles className="w-4 h-4 animate-spin" />
-            </div>
-            <div className="glass-card p-5 max-w-xl text-xs text-slate-300 space-y-2.5">
-              <div className="flex items-center gap-2 text-[#22C8E5] font-semibold">
-                <span className="w-2 h-2 rounded-full bg-[#22C8E5] animate-ping"></span>
-                <span>Synthesizing multi-domain academic derivation...</span>
+          {loading && (
+            <div className="flex gap-3 md:gap-4 items-start animate-pulse">
+              <div className="w-9 h-9 rounded-xl bg-[#7867FF]/20 border border-[#7867FF]/40 flex items-center justify-center text-[#7867FF] shrink-0 mt-1">
+                <Sparkles className="w-4 h-4 animate-spin" />
               </div>
-              <div className="h-2.5 bg-white/10 rounded-full w-3/4"></div>
-              <div className="h-2.5 bg-white/5 rounded-full w-5/6"></div>
-              <div className="h-2.5 bg-white/10 rounded-full w-2/3"></div>
+              <div className="glass-card p-5 max-w-xl text-xs text-slate-300 space-y-2.5">
+                <div className="flex items-center gap-2 text-[#22C8E5] font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-[#22C8E5] animate-ping"></span>
+                  <span>Synthesizing multi-domain academic derivation...</span>
+                </div>
+                <div className="h-2.5 bg-white/10 rounded-full w-3/4"></div>
+                <div className="h-2.5 bg-white/5 rounded-full w-5/6"></div>
+                <div className="h-2.5 bg-white/10 rounded-full w-2/3"></div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div ref={messagesEndRef} />
-      </div>
+          <div ref={messagesEndRef} />
+        </div>
+      ) : (
+        /* Empty Landing Dashboard View */
+        <div className="space-y-8 pb-32 animate-slide-up">
+          {/* HERO BANNER */}
+          <div className="hero-gradient p-6 sm:p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[#7867FF]/15 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+            <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-[#22C8E5]/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* FLOATING BOTTOM PROMPT COMPOSER */}
-      <div className="pt-3 border-t border-white/10 mt-3 relative z-20">
-        {/* Attached File Preview Bar */}
-        {attachedFile && (
-          <div className="mb-2 px-3 py-1.5 rounded-lg bg-[#1B2438] border border-[#22C8E5]/30 flex items-center justify-between text-xs text-slate-200">
-            <div className="flex items-center gap-2 truncate">
-              <Paperclip className="w-3.5 h-3.5 text-[#22C8E5]" />
-              <span className="font-semibold text-white truncate">{attachedFile.name}</span>
-              <span className="text-slate-400 text-[11px]">(Attached for grounded reasoning)</span>
-            </div>
-            <button
-              onClick={() => setAttachedFile(null)}
-              className="text-slate-400 hover:text-rose-400 ml-2"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+            <div className="relative z-10 max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-[#22C8E5] mb-4 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                AI Engine Online • Multi-Domain Reasoning • SymPy & AST Verified
+              </div>
 
-        {/* Prompt Composer Box */}
-        <div className="relative rounded-2xl bg-[#0D1222] border border-white/15 focus-within:border-[#7867FF] focus-within:ring-1 focus-within:ring-[#7867FF] transition-all shadow-xl">
-          <textarea
-            ref={textareaRef}
-            rows={2}
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            placeholder="Ask DoubtBuster anything across any domain (e.g. solve calculus integral, explain 8086 queue, write recursive search)..."
-            className="w-full bg-transparent border-0 resize-none text-white placeholder-slate-500 text-sm px-4 pt-3 pb-2 focus:ring-0 outline-none"
-          />
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3.5 leading-tight">
+                Learn Smarter. Solve Faster.{' '}
+                <span className="text-gradient">Master Everything.</span>
+              </h2>
 
-          {/* Action Row Inside Composer */}
-          <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
-            <div className="flex items-center gap-1.5">
-              {/* File Attachment Hidden Input */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".txt,.py,.md,.pdf,.json"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl">
+                Your personal AI academic companion for understanding concepts, solving complex problems and accelerating conceptual mastery with high mathematical precision.
+              </p>
 
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-                title="Attach Document / Code File"
-              >
-                <Paperclip className="w-4 h-4" />
-              </button>
-
-              {/* Voice Dictation Button */}
-              <button
-                type="button"
-                onClick={handleToggleVoice}
-                className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs ${
-                  isListening
-                    ? 'bg-rose-500/20 text-rose-400 animate-pulse border border-rose-500/40'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-                title={isListening ? 'Listening... click to stop' : 'Voice Input'}
-              >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                {isListening && <span className="text-[10px]">Listening...</span>}
-              </button>
-
-              {/* Clear Input */}
-              {inputText.trim() && (
+              <div className="flex flex-wrap items-center gap-3">
                 <button
-                  type="button"
-                  onClick={() => setInputText('')}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-colors"
-                  title="Clear Input"
+                  onClick={() => textareaRef.current?.focus()}
+                  className="btn-primary"
                 >
-                  <X className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4" />
+                  <span>Ask AI Tutor</span>
                 </button>
-              )}
+                <button
+                  onClick={scrollToSubjects}
+                  className="btn-secondary"
+                >
+                  <span>Explore Subjects</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* DYNAMIC REAL STATISTICS CARDS */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="stat-card">
+              <div className="stat-label flex items-center justify-between">
+                <span>Total Doubts Solved</span>
+                <CheckCircle2 className="w-4 h-4 text-[#22C8E5]" />
+              </div>
+              <div className="stat-value text-white">{totalDoubts}</div>
+              <div className="text-[11px] text-[#94A3B8] font-medium">Logged in database</div>
             </div>
 
-            {/* Send Button */}
-            <button
-              onClick={() => handleSendMessage()}
-              disabled={(!inputText.trim() && !attachedFile) || loading}
-              className="btn-primary py-1.5 px-3.5 text-xs font-semibold"
-            >
-              <span>Ask Tutor</span>
-              <CornerDownLeft className="w-3.5 h-3.5" />
-            </button>
+            <div className="stat-card">
+              <div className="stat-label flex items-center justify-between">
+                <span>Questions Asked</span>
+                <HelpCircle className="w-4 h-4 text-[#7867FF]" />
+              </div>
+              <div className="stat-value text-white">{questionsPracticed}</div>
+              <div className="text-[11px] text-[#94A3B8] font-medium">Doubts & practice questions</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-label flex items-center justify-between">
+                <span>Learning Hours</span>
+                <Clock className="w-4 h-4 text-[#22C8E5]" />
+              </div>
+              <div className="stat-value text-white">{learningHours} <span className="text-sm font-normal text-slate-400">hrs</span></div>
+              <div className="text-[11px] text-emerald-400 font-semibold">Active conceptual mastery</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-label flex items-center justify-between">
+                <span>Current Study Streak</span>
+                <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
+              </div>
+              <div className="stat-value text-amber-400 flex items-center gap-1">
+                {streak} <span className="text-sm font-normal text-slate-400">days</span>
+              </div>
+              <div className="text-[11px] text-[#94A3B8] font-medium">Consecutive learning activity</div>
+            </div>
+          </div>
+
+          {/* SUBJECT EXPLORATION GRID */}
+          <div ref={subjectCardsRef} className="pt-2 space-y-4">
+            <div className="flex justify-between items-end">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-[#7867FF]" />
+                  Explore Academic Disciplines
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Select any foundational engineering or scientific domain to examine concepts or ask targeted doubts.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {SUBJECT_EXPLORATION_CARDS.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <div
+                    key={card.id}
+                    className="glass-card p-5 flex flex-col justify-between hover:border-[#7867FF]/50 hover:bg-[#161E36]/60 transition-all group cursor-pointer"
+                    onClick={() => handleSendMessage(card.prompt)}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${card.color} border`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <span className="text-[11px] font-semibold text-slate-400 group-hover:text-white flex items-center gap-1 transition-colors">
+                          Explore <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+
+                      <h4 className="text-base font-bold text-white group-hover:text-[#22C8E5] transition-colors mb-1.5">
+                        {card.title}
+                      </h4>
+
+                      <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-4">
+                        {card.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-white/5">
+                      <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">
+                        Example Concept Query
+                      </div>
+                      <div className="text-xs text-slate-300 italic line-clamp-2">
+                        "{card.example}"
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Footer Info / Mode Indicator */}
-        <div className="flex flex-wrap justify-between items-center text-[11px] text-slate-400 px-2 pt-1.5">
-          <div className="flex items-center gap-2">
-            <span>Pedagogical Mode: <strong className="text-white">{settings.mode || 'Step-by-step'}</strong></span>
-            <span>•</span>
-            <span>Calibrated Level: <strong className="text-[#22C8E5]">{settings.level || 'Intermediate'}</strong></span>
+      {/* FLOATING FROSTED GLASS COMPOSER DOCK */}
+      <div className="fixed bottom-0 left-0 right-0 lg:left-68 p-4 bg-gradient-to-t from-[#070913] via-[#070913]/95 to-transparent z-30">
+        <div className="max-w-4xl mx-auto space-y-2">
+          {/* Attached File Preview Bar */}
+          {attachedFile && (
+            <div className="px-3.5 py-1.5 rounded-lg bg-[#161E36] border border-[#22C8E5]/30 flex items-center justify-between text-xs text-slate-200 animate-slide-up">
+              <div className="flex items-center gap-2 truncate">
+                <Paperclip className="w-3.5 h-3.5 text-[#22C8E5]" />
+                <span className="font-semibold text-white truncate">{attachedFile.name}</span>
+                <span className="text-slate-400 text-[11px]">(Attached for grounded reasoning)</span>
+              </div>
+              <button
+                onClick={() => setAttachedFile(null)}
+                className="text-slate-400 hover:text-rose-400 ml-2"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Composer Box */}
+          <div className="relative rounded-2xl bg-[#0E1428] border border-white/15 focus-within:border-[#7867FF] focus-within:ring-2 focus-within:ring-[#7867FF]/20 transition-all shadow-2xl backdrop-blur-xl">
+            <textarea
+              ref={textareaRef}
+              rows={2}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder="Ask DoubtBuster anything (e.g. solve calculus integral, explain 8086 queue, write recursive search)..."
+              className="w-full bg-transparent border-0 resize-none text-white placeholder-slate-500 text-sm px-4 pt-3 pb-2 focus:ring-0 outline-none"
+            />
+
+            {/* Actions Inside Composer */}
+            <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
+              <div className="flex items-center gap-1.5">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".txt,.py,.md,.pdf,.json"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                  title="Attach Document or Code Snippet"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleToggleVoice}
+                  className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs ${
+                    isListening
+                      ? 'bg-rose-500/20 text-rose-400 animate-pulse border border-rose-500/40'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                  title={isListening ? 'Listening... click to stop' : 'Voice Input'}
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  {isListening && <span className="text-[10px]">Listening...</span>}
+                </button>
+
+                {inputText.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setInputText('')}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-colors"
+                    title="Clear Input"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleSendMessage()}
+                  disabled={(!inputText.trim() && !attachedFile) || loading}
+                  className="btn-primary py-1.5 px-4 text-xs font-semibold"
+                >
+                  <span>Ask Tutor</span>
+                  <CornerDownLeft className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-slate-500">
-            <span>Press <kbd className="px-1 py-0.5 rounded bg-white/5 text-slate-300 font-mono text-[10px]">Enter</kbd> to send, <kbd className="px-1 py-0.5 rounded bg-white/5 text-slate-300 font-mono text-[10px]">Shift+Enter</kbd> for newline</span>
+
+          {/* Footer Mode Indicator */}
+          <div className="flex flex-wrap justify-between items-center text-[11px] text-slate-400 px-2">
+            <div className="flex items-center gap-2">
+              <span>Mode: <strong className="text-white">{settings.mode || 'Step-by-step'}</strong></span>
+              <span>•</span>
+              <span>Level: <strong className="text-[#22C8E5]">{settings.level || 'Intermediate'}</strong></span>
+              <button
+                onClick={onOpenSettings}
+                className="text-[#7867FF] hover:underline ml-1 font-semibold flex items-center gap-1"
+              >
+                <Sliders className="w-3 h-3" /> Change
+              </button>
+            </div>
+            <div className="hidden sm:flex items-center gap-1.5 text-slate-500">
+              <span>Press <kbd className="px-1 py-0.5 rounded bg-white/5 text-slate-300 font-mono text-[10px]">Enter</kbd> to send, <kbd className="px-1 py-0.5 rounded bg-white/5 text-slate-300 font-mono text-[10px]">Shift+Enter</kbd> for newline</span>
+            </div>
           </div>
         </div>
       </div>

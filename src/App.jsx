@@ -16,12 +16,12 @@ import {
   ChevronRight,
   Menu,
   X,
-  Key,
   ShieldCheck,
   Cpu
 } from 'lucide-react';
 
 import Header from './components/Header';
+import SettingsModal from './components/SettingsModal';
 import ChatTab from './components/ChatTab';
 import MathTab from './components/MathTab';
 import CodeTab from './components/CodeTab';
@@ -37,17 +37,20 @@ export default function App() {
   const [stats, setStats] = useState(null);
   const [adaptiveLevel, setAdaptiveLevel] = useState('Intermediate');
 
-  // Sidebar settings state
-  const [level, setLevel] = useState('Intermediate');
-  const [mode, setMode] = useState('Step-by-step explanation');
-  const [language, setLanguage] = useState('English');
-  const [attempt, setAttempt] = useState('');
-  const [provider, setProvider] = useState('offline');
-  const [apiKey, setApiKey] = useState('');
+  // Pedagogical & Provider Settings State
+  const [settings, setSettings] = useState({
+    level: 'Intermediate',
+    mode: 'Step-by-step explanation',
+    language: 'English',
+    attempt: '',
+    provider: 'offline',
+    apiKey: ''
+  });
 
   // UI state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -59,25 +62,29 @@ export default function App() {
       const data = await res.json();
       setStats(data.stats || {});
       setAdaptiveLevel(data.adaptive_difficulty || 'Intermediate');
-      setLevel(data.adaptive_difficulty || 'Intermediate');
+      setSettings((prev) => ({
+        ...prev,
+        level: data.adaptive_difficulty || prev.level
+      }));
     } catch (e) {
       console.error('Could not fetch stats:', e);
     }
   };
 
   const navItems = [
-    { id: 'chat', label: 'AI Tutor', icon: MessageSquare, badge: 'Core' },
-    { id: 'math', label: 'Math Studio (SymPy)', icon: Calculator, badge: 'Verified' },
-    { id: 'code', label: 'Code Sandbox & AST', icon: Terminal, badge: 'Isolated' },
-    { id: 'quiz', label: 'Practice & Quizzes', icon: BookOpen, badge: null },
-    { id: 'history', label: 'Learning History', icon: History, badge: null },
-    { id: 'study', label: 'Study Hub & Notes', icon: BookmarkCheck, badge: 'RAG' },
-    { id: 'progress', label: 'Student Analytics', icon: TrendingUp, badge: null },
-    { id: 'faculty', label: 'Faculty Dashboard', icon: Users, badge: 'Admin' }
+    { id: 'chat', label: 'AI Academic Tutor', icon: MessageSquare },
+    { id: 'math', label: 'Math Studio (SymPy)', icon: Calculator },
+    { id: 'code', label: 'Code Sandbox & AST', icon: Terminal },
+    { id: 'quiz', label: 'Practice & Quizzes', icon: BookOpen },
+    { id: 'history', label: 'Learning History', icon: History },
+    { id: 'study', label: 'Study Hub & Notes', icon: BookmarkCheck },
+    { id: 'progress', label: 'Student Analytics', icon: TrendingUp },
+    { id: 'faculty', label: 'Faculty Dashboard', icon: Users }
   ];
 
   const handleResetChat = () => {
     setMessages([]);
+    setActiveTab('chat');
   };
 
   const handleSwitchTab = (tabId) => {
@@ -85,19 +92,10 @@ export default function App() {
     setMobileMenuOpen(false);
   };
 
-  const sidebarSettings = {
-    level,
-    mode,
-    language,
-    attempt,
-    apiKey,
-    provider
-  };
-
   return (
-    <div className="flex min-h-screen bg-[#080B16] text-[#F8FAFC] font-sans antialiased">
-      {/* Mobile Header Bar with Hamburger */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#0D1222]/95 backdrop-blur-md border-b border-white/10 z-50 flex items-center justify-between px-4">
+    <div className="flex min-h-screen bg-[#070913] text-[#F8FAFC] font-sans antialiased">
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-[#0B0F1D]/95 backdrop-blur-md border-b border-white/10 z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-[#7867FF]/20 text-[#7867FF]">
             <Sparkles className="w-4 h-4" />
@@ -112,18 +110,18 @@ export default function App() {
         </button>
       </div>
 
-      {/* Mobile Drawer Overlay */}
+      {/* Mobile Drawer Backdrop */}
       {mobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-40"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen bg-[#0D1222] border-r border-white/10 p-4 shrink-0 flex flex-col justify-between z-40 transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'
+        className={`fixed lg:sticky top-0 left-0 h-screen bg-[#0B0F1D] border-r border-white/10 p-4 shrink-0 flex flex-col justify-between z-40 transition-all duration-300 ${
+          sidebarCollapsed ? 'lg:w-20' : 'lg:w-68'
         } ${
           mobileMenuOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
         } overflow-y-auto`}
@@ -132,7 +130,7 @@ export default function App() {
           {/* Top Logo & Desktop Collapse Toggle */}
           <div className="flex items-center justify-between pt-2 lg:pt-0">
             <div className={`flex items-center gap-2.5 ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
-              <div className="p-2 rounded-xl bg-gradient-to-br from-[#7867FF]/25 to-[#22C8E5]/25 border border-[#7867FF]/40 text-[#7867FF] shrink-0">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-[#7867FF]/25 to-[#22C8E5]/25 border border-[#7867FF]/35 text-[#7867FF] shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               {!sidebarCollapsed && (
@@ -140,7 +138,7 @@ export default function App() {
                   <div className="text-lg font-extrabold tracking-tight text-gradient">
                     DoubtBuster
                   </div>
-                  <div className="text-[10px] text-[#A1AEC4] tracking-wider uppercase font-semibold">
+                  <div className="text-[10px] text-[#94A3B8] tracking-wider uppercase font-semibold">
                     Universal AI Academic
                   </div>
                 </div>
@@ -157,20 +155,20 @@ export default function App() {
             </button>
           </div>
 
-          {/* New Chat / Reset Button */}
+          {/* New Chat Button */}
           <button
             onClick={handleResetChat}
-            className={`btn-primary w-full py-2.5 px-3 text-xs flex items-center justify-center gap-2 font-semibold ${
+            className={`btn-primary w-full py-2.5 px-3 text-xs flex items-center justify-center gap-2 font-semibold shadow-md ${
               sidebarCollapsed ? 'px-2' : ''
             }`}
-            title="Reset Chat / New Doubt"
+            title="Start New Academic Dialogue"
           >
             <RotateCcw className="w-4 h-4 shrink-0" />
-            {!sidebarCollapsed && <span>New Chat / Reset</span>}
+            {!sidebarCollapsed && <span>New Doubt / Reset</span>}
           </button>
 
-          {/* Navigation Items */}
-          <nav className="space-y-1">
+          {/* Navigation Links */}
+          <nav className="space-y-1.5">
             {!sidebarCollapsed && (
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 mb-2">
                 Workspace Modules
@@ -183,151 +181,72 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => handleSwitchTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#7867FF] to-[#604CEE] text-white shadow-lg shadow-[#7867FF]/25'
-                      : 'text-[#A1AEC4] hover:text-white hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-[#7867FF] to-[#604CEE] text-white shadow-lg shadow-[#7867FF]/30'
+                      : 'text-[#94A3B8] hover:text-white hover:bg-white/5'
                   } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
                   title={item.label}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[#A1AEC4]'}`} />
-                  {!sidebarCollapsed && (
-                    <div className="flex-1 text-left flex items-center justify-between">
-                      <span className="truncate">{item.label}</span>
-                      {item.badge && (
-                        <span className={`text-[9px] px-1.5 py-0.2 rounded font-semibold ${
-                          isActive
-                            ? 'bg-white/20 text-white'
-                            : 'bg-white/5 text-slate-400'
-                        }`}>
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-[#94A3B8]'}`} />
+                  {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                 </button>
               );
             })}
           </nav>
+        </div>
 
-          {/* Pedagogical Controls Section */}
+        {/* Sidebar Bottom Controls */}
+        <div className="pt-4 border-t border-white/10 space-y-3">
+          {/* Quick Settings Trigger Card */}
+          {!sidebarCollapsed ? (
+            <div
+              onClick={() => setSettingsModalOpen(true)}
+              className="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-[#7867FF]/40 cursor-pointer transition-all space-y-1.5 group"
+            >
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-300 font-semibold flex items-center gap-1.5 group-hover:text-white">
+                  <Sliders className="w-3.5 h-3.5 text-[#22C8E5]" /> Tutor Controls
+                </span>
+                <span className="text-[10px] text-[#22C8E5] font-bold bg-[#22C8E5]/15 px-1.5 py-0.2 rounded">
+                  {settings.level}
+                </span>
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">
+                Mode: {settings.mode}
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setSettingsModalOpen(true)}
+              className="w-full p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+              title="Tutor Controls"
+            >
+              <Sliders className="w-4 h-4 text-[#22C8E5]" />
+            </button>
+          )}
+
+          {/* Department Footer */}
           {!sidebarCollapsed && (
-            <div className="pt-4 border-t border-white/10 space-y-3.5">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 px-1">
-                <Sliders className="w-3.5 h-3.5 text-[#22C8E5]" />
-                <span>Pedagogical Controls</span>
+            <div className="text-[10px] text-slate-500 px-1 flex flex-col gap-0.5">
+              <div className="flex items-center gap-1.5 text-slate-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>DoubtBuster v2.0 • Active</span>
               </div>
-
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">
-                  Skill Level (Adaptive: <strong className="text-[#22C8E5]">{adaptiveLevel}</strong>)
-                </label>
-                <select
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
-                  className="w-full text-xs py-1.5 bg-[#141B2D]"
-                >
-                  <option>Beginner</option>
-                  <option>Intermediate</option>
-                  <option>Advanced</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Pedagogical Mode</label>
-                <select
-                  value={mode}
-                  onChange={(e) => setMode(e.target.value)}
-                  className="w-full text-xs py-1.5 bg-[#141B2D]"
-                >
-                  <option>Step-by-step explanation</option>
-                  <option>Hint first</option>
-                  <option>Verify my answer</option>
-                  <option>Practice question with answer key</option>
-                </select>
-              </div>
-
-              {mode === 'Verify my answer' && (
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">Your Preliminary Attempt</label>
-                  <textarea
-                    rows={2}
-                    value={attempt}
-                    onChange={(e) => setAttempt(e.target.value)}
-                    placeholder="Type your reasoning..."
-                    className="w-full text-xs bg-[#141B2D]"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">Response Language</label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full text-xs py-1.5 bg-[#141B2D]"
-                >
-                  <option>English</option>
-                  <option>Simple English</option>
-                  <option>Telugu (Technical mix)</option>
-                  <option>Hindi (Technical mix)</option>
-                </select>
-              </div>
-
-              {/* AI Engine Provider */}
-              <div className="pt-2 border-t border-white/5 space-y-2">
-                <label className="block text-[11px] text-slate-400 flex items-center justify-between">
-                  <span>AI Engine Provider</span>
-                  <Settings className="w-3 h-3 text-slate-500" />
-                </label>
-                <select
-                  value={provider}
-                  onChange={(e) => setProvider(e.target.value)}
-                  className="w-full text-xs py-1.5 bg-[#141B2D]"
-                >
-                  <option value="offline">Auto-detect / Free Built-in Mode</option>
-                  <option value="gemini">Google Gemini 2.0</option>
-                  <option value="groq">Groq Llama-3.3-70B</option>
-                  <option value="openai">OpenAI GPT-4o-mini</option>
-                </select>
-
-                {provider !== 'offline' && (
-                  <div className="pt-1">
-                    <input
-                      type="password"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder={`Enter ${provider} API Key`}
-                      className="w-full text-xs py-1.5 bg-[#141B2D]"
-                    />
-                  </div>
-                )}
-              </div>
+              <div>Department of CSE • GMRIT</div>
             </div>
           )}
         </div>
-
-        {/* Sidebar Footer */}
-        {!sidebarCollapsed && (
-          <div className="pt-4 border-t border-white/10 text-[11px] text-slate-500 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>DoubtBuster 2.0 • Active</span>
-            </div>
-            <div className="text-[10px] text-slate-500">
-              Department of CSE • GMRIT
-            </div>
-          </div>
-        )}
       </aside>
 
-      {/* Main Content Workspace */}
+      {/* Main Workspace Area */}
       <main className="flex-1 flex flex-col min-w-0 pt-14 lg:pt-0">
         <Header
           stats={stats}
           adaptiveLevel={adaptiveLevel}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          onOpenSettings={() => setSettingsModalOpen(true)}
+          settings={settings}
         />
 
         <div className="p-4 sm:p-6 lg:p-8 flex-1 overflow-x-hidden">
@@ -335,9 +254,10 @@ export default function App() {
             <ChatTab
               messages={messages}
               setMessages={setMessages}
-              settings={sidebarSettings}
+              settings={settings}
               stats={stats}
               onRefreshStats={fetchStats}
+              onOpenSettings={() => setSettingsModalOpen(true)}
             />
           )}
 
@@ -377,6 +297,15 @@ export default function App() {
           {activeTab === 'faculty' && <FacultyTab />}
         </div>
       </main>
+
+      {/* Tutor Settings Modal */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        settings={settings}
+        onUpdateSettings={(newSettings) => setSettings(newSettings)}
+        adaptiveLevel={adaptiveLevel}
+      />
     </div>
   );
 }
